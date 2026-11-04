@@ -196,7 +196,7 @@
 | 分段门规则 | 对应总控机检项 |
 |---|---|
 | 段长 ≤ 模型上限（2.0=15s / 2.5=30s） | C1 |
-| 切镜上限（镜头数 ≤ ceil(段长/3s)）、单镜 <3s 告警 | C2 |
+| 双轨弹性镜数（2.5 为 10~12 镜 / 2.0 为 5~6 镜）与防机械等长切分 | C2 |
 | 时间轴无断档/重叠、无倒挂 | C3 |
 | 段末无接续尾行（残留即 FAIL） | C11（2026-10-09 反转） |
 | 镜长按剧情倒推、禁机械等分 | C13（同值镜长占比 ≥70% 告警） |
@@ -214,4 +214,4 @@ python scripts/validate_seedance_segment_map.py "<EDITING_PLAN.json>"
 - **输入**：按 §三模板填写、且带根字段 `schema_version:"3.0"`、`artifact_type:"EDITING_PLAN"`、`stage_id:"16"` 的 JSON 文件。
 - **输出**：全部通过打印 `PASS`；否则逐条打印 `ERROR: ...` 并以退出码 1 结束。**分段锁定前必须 PASS。**
 - **校验内容**：根字段齐全；每段 0 < duration ≤ 15；`max_segment_seconds ≤ 15`；`shot_ids/story_units` 非空；相邻段入口类型 = 前段出口类型（首段必须 `SCENE_ENTRY`，末段必须 `SCENE_END`）；`VISIBLE_CUT` 必须带导演切点 ID、非切镜边界禁止携带；`HIDDEN_SEAM` 必须带隐藏缝 ID；四项 safety_checks 全 true；`selected_time = duration`；跳过已批准切镜必须写 `cut_alignment_override_reason`；除首段外尾帧接力必须登记且 `tail_usage` 与入口类型匹配；台词切片落点在段内、非完整切片必须带 `split_anchor`、`CLAUSE_HEAD/MIDDLE` 必须能在目标段找到同一 `dialogue_id/speaker_id/voice_id` 的续接切片。
-- **适用范围**：仅当采用结构化 EDITING_PLAN JSON 工作流时使用；七段式文本投喂稿的出稿门禁走总控 `validate_prompt.py`（见 `machine-check-manual.md`），两者不互相替代。
+- **适用范围**：仅当采用结构化 EDITING_PLAN JSON 工作流时使用；【视频 X】标准文本投喂稿的出稿门禁走总控 `validate_prompt.py`（见 `machine-check-manual.md`），两者不互相替代。

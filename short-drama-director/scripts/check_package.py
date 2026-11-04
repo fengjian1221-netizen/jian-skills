@@ -119,7 +119,7 @@ import py_compile
 import subprocess
 import warnings
 
-VERSION = "7.4.26"
+VERSION = "7.5.0"
 EXPECTED_REFS = 50   # 递归计数（40 份顶层规则库 + style-bible 10 份）。⚠️ 注意：SKILL.md 对外统一声明「50 份规则库」（递归口径）。2026-10-19 新增 delivery-pitfalls.md（交付翻车清单）后由 49 升至 50。
 SUB_SKILLS = [
     "sd-decision-engine", "sd-recon-engine", "sd-script-engine", "sd-overseas-engine",
@@ -345,8 +345,8 @@ _ban = [l for l in "\n".join(read(p) for p in scan_rule_docs()).splitlines()
         if re.search(r"八段式|六栏|九栏", l) and not re.search(r"禁|别名", l)]
 check("③ 禁用「八段式/六栏/九栏」别名（禁令声明行除外）", not _ban, "; ".join(_ban[:3]))
 ma = read(os.path.join(refs_dir, "model-adapters.md"))
-check("③ 七段式唯一命名 + 【接续状态】废止口径（model-adapters §5）",
-      "「七段式」为唯一命名" in ma and "【接续状态】尾行已于 2026-10-09 废止" in ma)
+check("③ 【视频 X】唯一标准命名 + 【接续状态】废止口径（model-adapters §5）",
+      "「【视频 X】」为唯一标准命名" in ma and "【接续状态】尾行已于 2026-10-09 废止" in ma)
 
 check("④ spatial-reference-system-V3 带 LEGACY/备查标记",
       "LEGACY" in read(os.path.join(refs_dir, "spatial-reference-system-V3.md")))
@@ -413,7 +413,7 @@ for fn in py_files:
         _compile_fail.append(f"{fn}: {e}")
 check(f"scripts/ 全部 {len(py_files)} 个脚本可编译", not _compile_fail, "; ".join(_compile_fail[:3]))
 
-# ★ 语法告警门（2026-10-16 补 · V7.4.26）
+# ★ 语法告警门（沿革：2026-10-16 补 · V7.4.26）
 # 交付脚本每次运行都会把 SyntaxWarning（如非法转义序列 "\["）打到**用户终端**，
 # 属交付件噪声；且未来 Python 版本将把非法转义序列升为 SyntaxError → 直接崩。
 # 历史病灶：本文件内探测 build_board_lite.py 的字符类片段 `[\[【]?` 未加 raw 前缀，
@@ -1315,13 +1315,14 @@ check("㊽ 互锁②：旧口径「对话段落不得全程固定」已降级为
 check("㊽ 互锁③：总控法则21④ 视线指派已扩写为「单镜 ≥2 人必写视线落点」",
       "视线指派（★ 2026-10-12 扩写 · 多人同镜硬项）" in _main_skill
       and "视线落点：看向 @某人" in _main_skill)
-check("㊽ 互锁④：投喂引擎画风锁契约已改「常规稿不写段8/段9 · 美学 ≤15/30 字并入画幅风格」",
-      "常规稿不写段8/段9" in _feed_skill
-      and any(x in _feed_skill for x in ("美学短语（≤30 字", "美学短语（≤15 字"))
-      and "并入【画幅风格】" in _feed_skill)
-check("㊽ 互锁⑤：总控 I 锁段同步登记该路径变更（且保留选卡时仍写段8/9）",
-      "2026-10-12 用户实测修订（路径变更）" in _main_skill
-      and "仅当用户明确选定导演卡时才落段8/段9" in _main_skill)
+check("㊽ 互锁④：投喂引擎画风锁契约已升级 V7.5.0「风格要求：≤30 字纯净短语 · 废除段8/段9堆砌」",
+      "风格要求：" in _feed_skill
+      and "≤30 字" in _feed_skill
+      and "废除旧版段8/段9" in _feed_skill)
+check("㊽ 互锁⑤：总控 I 锁段同步登记 V7.5.0 纯净定型（风格要求 ≤30 字 + 镜行物理转译）",
+      "风格要求：" in _main_skill
+      and "≤30 字" in _main_skill
+      and "废除旧版段8/段9" in _main_skill)
 # ★ 2026-10-13 措辞同步：C/I 锁升格为强制锁（域 [E*25]）时，段8/段9 触发条件由
 #   「未选导演卡」精确化为「用户回『按你的推荐走』/ 未指定具体导演卡」，且「默认路径」改称「路径」。
 #   本节互锁④⑤ 的检查串已随之同步，语义未变。
@@ -1351,23 +1352,23 @@ _stability = subprocess.run(
     encoding="utf-8", env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1", "PYTHONIOENCODING": "utf-8"})
 check("㊾ 互锁③：累计对白预算、显式定格扣时与否定定格行为回归",
       _stability.returncode == 0, _stability.stdout + _stability.stderr)
-check("㊾ 互锁④：段7 禁项极简四项（权威模板 + 长清单禁加理由）",
-      "【强制禁止项】画面：禁字幕、禁水印（含 Logo）；音频：禁背景音乐、禁旁白。" in _mads
-      and "禁项极简（2026-10-13 粉丝实测修订 · 默认只写四项）" in _mads)
+check("㊾ 互锁④：V7.5.0 正向物理防崩取代旧版末尾负面禁令词表（model-adapters 权威声明）",
+      ("正向物理防崩" in _mads or "彻底废除" in _mads or "废止" in _mads)
+      and "禁项只作兜底，不能替代替换语" in _mads)
 check("㊾ 互锁⑤：资产提示词正文纯净四条（编号/自检延续备注/表格排版/头身比）",
       "提示词正文纯净（2026-10-13 粉丝实测修订）" in _e18_asa
       and "人物提示词主动写头身比" in _e18_asa)
 
-# 三条同源推广断言（2026-10-13 收口）：粉丝反馈不只在权威文件落地，示范稿/模板/姊妹落点须同步
+# 三条同源推广断言（2026-10-13 收口 · V7.5.0 升级至【视频 X】）：示范稿/模板/姊妹落点同步清零负面词表
 _e18_ra = read(os.path.join(PKG, "sd-real-engine", "references", "render-adapters.md"))
 _e18_sbe = read(os.path.join(PKG, "sd-real-engine", "references", "storyboard-example.md"))
 _e18_sre = read(os.path.join(refs_dir, "seedance-render-engine.md"))
-check("㊾ 互锁⑥：三处示范稿段7 同步极简（旧长清单「禁止角色变形」类串已从示范稿清零）",
+check("㊾ 互锁⑥：三处示范稿与渲染模板同步【视频 X】标准且清零旧长清单「禁止角色变形」类串",
       "禁止角色变形" not in _e18_ra and "禁止角色变形" not in _e18_sbe
       and "禁止角色变形" not in _e18_sre
-      and "画面：禁字幕、禁水印（含 Logo）；" in _e18_ra
-      and "画面：禁字幕、禁水印（含 Logo）；" in _e18_sbe
-      and "画面：禁字幕、禁水印（含 Logo）；" in _e18_sre)
+      and "【视频 1】" in _e18_ra
+      and "【视频 1】" in _e18_sbe
+      and "【视频 1】" in _e18_sre)
 _e18_fsk = read(os.path.join(PKG, "sd-feed-engine", "SKILL.md"))
 _e18_mcm = read(os.path.join(PKG, "sd-qc-engine", "references", "machine-check-manual.md"))
 _e18_sat = read(os.path.join(PKG, "sd-qc-engine", "references", "stage-acceptance-table.md"))
@@ -1856,9 +1857,9 @@ check("◇1：asset-delivery-modes 的「新稿一律写」清单已含道具（
       and "新稿一律写 `@人名` / `@场景名`**" not in _dlv26)
 check("◇2：三族锚点同源（asset-spatial-ledger 声明 @CHR/@SCN/@PRP + h3-adapter 映射表含道具行）",
       "@CHR/@SCN/@PRP 属性" in _spa26
-      and "【场景资产】`@PRP-xxx`（关键道具" in _h3a26)
-check("◇3：七段式权威 + 投喂引擎 + 故事板层三处同步（骨架含 @PRP- · 锚定纪律章节在案 · 道具锚定句式落地）",
-      "【场景资产】@SCN-xxx（参考图N）" in _mdl_adp and ";@PRP-xxx" in _mdl_adp.replace("；", ";")
+      and "`道具：名字（图M）`" in _h3a26 and "`@PRP-xxx`" in _h3a26)
+check("◇3：【视频 X】权威 + 投喂引擎 + 故事板层三处同步（道具：栏在案 · 锚定纪律章节在案 · 上游 @PRP- 同源落地）",
+      "道具：" in _mdl_adp
       and "道具锚定纪律（2026-10-13 新增 · 治「道具无 @ 位」）" in _mdl_adp
       and "@PRP-道具名（外观以道具参考图锁定；状态" in _sfe_skill
       and "@PRP-道具名（外观以道具参考图锁定；状态" in _amr26
@@ -2086,7 +2087,7 @@ check("◑8 本套装 13 目录零命中「旧版本串」（防命中被截断�
 # ◑16 扫描域锁定（2026-10-16 根治 · 治「os.walk(PKG) 越界」）：
 #   本套装的规则文件扫描域**恰为 13 个目录**（总控 + 12 子技能）。
 #   事故：`scan_md_files()` 直扫包根 → ① GitHub 仓库根落地页 `README.md`（写着上一版版本号）
-#   ② 用户本机同级其它技能 → 被并入内容规则门，从仓库根跑必报假 FAIL（V7.4.26 升版后实测发现）。
+#   ② 用户本机同级其它技能 → 被并入内容规则门，从仓库根跑必报假 FAIL（沿革：V7.4.26 升版后实测发现）。
 _scan_outsiders = []
 for _p in scan_md_files():
     _top = os.path.relpath(_p, PKG).replace("\\", "/").split("/")[0]
@@ -2628,6 +2629,39 @@ check("◑23 gate_check 新参数 --img-limit 已同步到子技能快速索引�
 check("◑24 sd-feed-engine 机检码清单已覆盖 C31 / C32 / C18p（防子技能码表停在 C30）",
       all(k in _feed_skill for k in ("C31", "C32", "C18p")),
       "子技能机检码清单仍停在 C30a~d（与总控 §三 码表脱节）")
+
+# ================================================================
+# [E*38] V7.5.0 【视频 X】唯一标准 · 双轨时长与亚秒冲击帧 · 旧规冲突清零门
+# ================================================================
+section("[E*38] V7.5.0 【视频 X】唯一标准 · 双轨时长与亚秒冲击帧 · 旧规冲突清零门")
+
+_v75_neg_guard = re.compile(r"废除|废止|已废|严禁|禁止|禁用|不得|不再|旧版|旧规|反例|错误示范|LEGACY|污染|清零")
+_v75_conflict_pats = [
+    ("旧七段式正向规则", re.compile(r"七段式|【画幅风格】|【场景资产】|【核心人物】|【站位声明】|【时间轴分镜】|【强制禁止项】"), False),
+    ("旧STYLE/PERF段8段9正向规则", re.compile(r"【STYLE|【PERFORMANCE|段\s*[89](?!\d)"), False),
+    ("旧括号台词语法", re.compile(r"台词：【|声音：【?(?:VO|OS)"), False),
+    ("旧禁小数秒/整秒细切指令", re.compile(r"禁小数秒|禁时间码|整数秒口径|严禁小数点|整数秒细切|整秒细切"), False),
+    ("旧镜数死卡指令", re.compile(r"2~3\s*秒整秒|单镜\s*<\s*3s|6~8\s*镜|3~5\s*镜|4~5\s*镜|5~8\s*镜|12~16\s*镜"), False),
+    ("视频提示词伪技术参数堆砌", re.compile(r"UE5|虚幻5|虚幻\s*5|虚幻引擎\s*5|PBR|次表面散射"), True),
+]
+_p2_img_templates = {"character-portrait-templates.md", "scene-grid-template.md", "prop-template.md"}
+for _lbl38, _rx38, _skip_p2 in _v75_conflict_pats:
+    _hits38 = []
+    for _p38 in scan_rule_docs():
+        if _skip_p2 and os.path.basename(_p38) in _p2_img_templates:
+            continue
+        for _ln_no38, _ln38 in enumerate(read(_p38).splitlines(), 1):
+            if _rx38.search(_ln38) and not _v75_neg_guard.search(_ln38):
+                _hits38.append(f"{rel(_p38)}:L{_ln_no38}")
+    check(f"★V7.5.0 冲突清零：全套装 13 目录零「{_lbl38}」残留",
+          not _hits38, "; ".join(_hits38[:5]))
+
+check("★V7.5.0 双轨时长与七大高级运镜在 model-adapters 权威在案",
+      all(k in _mdl_adp for k in (
+          "严格锁定 30 秒", "10~12 个镜头", "严格锁定 15 秒", "5~6 个镜头",
+          "0.3s ~ 0.8s", "希区柯克变焦", "360°子弹时间", "滚轴翻转", "贴地极速跟推",
+          "移焦", "穿越穿梭", "升降格变速", "角色名说：", "角色名内心独白："
+      )))
 
 # ---------------------------------------------------------------- 汇总
 print()

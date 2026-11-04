@@ -1,15 +1,15 @@
 ---
 name: sd-qc-engine
-description: "【套装内部技能 · 全流程用户通常无需直接调用；直接说需求给总控 short-drama-director 即可，总控会自动路由到本技能】【漫剧老李 V7.4.26 套装 · 子技能】成片质检与连续性管理专精引擎：跨镜/跨集一致性台账、剪辑转场设计与 Seedance 15 秒分段门、声音设计模板、后期音乐与声音设计（BGM Cue Sheet/音乐搜索词/AI 音乐提示词/版权检查）、出稿机检使用。**一致性门按素材形态改判**（M0/M1 比文字档案；M2 才做图像级核验；本包不持有图，禁止索要图片、禁止虚假核验断言）。触发词：审查、质检、连续性检查、看片、拉片、台词诊断后复核、剪辑转场、分段检查、声音设计、机检、配BGM、后期音乐、找音乐、Suno提示词、音乐版权、素材形态。本技能为套装成员，完整全流程从总控 short-drama-director 进入。"
+description: "【套装内部技能 · 全流程用户通常无需直接调用；直接说需求给总控 short-drama-director 即可，总控会自动路由到本技能】【漫剧老李 V7.5.0 套装 · 子技能】成片质检与连续性管理专精引擎：跨镜/跨集一致性台账、剪辑转场设计与 Seedance 15 秒分段门、声音设计模板、后期音乐与声音设计（BGM Cue Sheet/音乐搜索词/AI 音乐提示词/版权检查）、出稿机检使用。**一致性门按素材形态改判**（M0/M1 比文字档案；M2 才做图像级核验；本包不持有图，禁止索要图片、禁止虚假核验断言）。触发词：审查、质检、连续性检查、看片、拉片、台词诊断后复核、剪辑转场、分段检查、声音设计、机检、配BGM、后期音乐、找音乐、Suno提示词、音乐版权、素材形态。本技能为套装成员，完整全流程从总控 short-drama-director 进入。"
 agent_created: true
-version: "7.4.26"
+version: "7.5.0"
 ---
 
 # sd-qc-engine · 成片质检与连续性管理专精引擎
 
 ## 一、角色定位
 
-本引擎是漫剧老李 V7.4.26 套装的**执行层质检专精**，管四件事：
+本引擎是漫剧老李 V7.5.0 套装的**执行层质检专精**，管四件事：
 
 1. **连续性台账**——跨镜/跨集的人物账（站位/朝向/服装/道具持拿）、场景账、时间轴账，防「上一段画面里的人这一段凭空消失」式穿帮。
 2. **剪辑转场与 Seedance 分段门**——镜头顺序、精确时长、许可切点、转场方式；Seedance 2.0 全能参考单段 ≤15 秒硬门；段缝安全检查。
@@ -24,7 +24,7 @@ version: "7.4.26"
 |---|---|---|
 | P0~P2 三级门禁（含画幅一致性、资产一致性、改动复验三步闭环） | 总控 `short-drama-director/references/quality-gate-review.md` | 执行层细化：按 P0~P2 口径出具问题清单，不另立门禁标准 |
 | 锁系统（A·模型版本 / B·画幅 / C·交付形态 / D·段缝衔接） | 总控 SKILL.md 〇节 | 按总控锁系统执行，不重复定义 |
-| 投喂格式（七段式 / H3 六段式） | 总控 `short-drama-director/references/model-adapters.md`、`short-drama-director/references/h3-adapter.md` | 模板中引用，不另立格式 |
+| 投喂格式（【视频 X】 / H3 六段式） | 总控 `short-drama-director/references/model-adapters.md`、`short-drama-director/references/h3-adapter.md` | 模板中引用，不另立格式 |
 | 出稿机检脚本 `validate_prompt.py`（C1~C26＋增量主码 C27a~d / C28a~c / C29 / C30a~d / H1~H12） | 总控 `scripts/validate_prompt.py` | 本引擎 `machine-check-manual.md` 是它的使用手册；脚本本体不复制、不改动 |
 | 包自检 `check_package.py` | 总控 `scripts/check_package.py` | 使用说明见本引擎手册 |
 | 术语口径（C1~C26 / H1~H12 / 整数秒时间轴 / 版本语法分离） | 总控 | 完全一致，冲突处以总控为准 |
@@ -38,7 +38,7 @@ version: "7.4.26"
 ```
 总控锁系统 → sd-script-engine（编剧）→ sd-asset-engine（资产）
   → sd-storyboard-engine / sd-combat-engine（分镜）
-  → 总控投喂封装（七段式/H3，权威在总控 short-drama-director/references/model-adapters.md）
+  → 总控投喂封装（【视频 X】/H3，权威在总控 short-drama-director/references/model-adapters.md）
   → ★ sd-qc-engine（连续性台账 → 剪辑转场分段门 → 声音设计 → 出稿机检）
   → 总控看板输出
 ```
@@ -100,6 +100,6 @@ version: "7.4.26"
 - 锁系统（A/B/C/D 四锁）按总控 SKILL.md 〇节执行，本技能不重复定义。
 - 资产编号沿用总控「图N」体系与对应台账（**按素材形态区分：M0《外观档案册》/ M1《资产编号册 + 素材接线单》/ M2《资产图册》**；《剧组产出册》通用）。
 - **素材形态**：**本包不持有图**。三档 M0/M1/M2（默认 M1），**权威 = 总控 `short-drama-director/references/asset-delivery-modes.md`**。本引擎的**一致性门按形态改判**——M0/M1 比**文字档案**（发/服装/体态/年龄感/标志物；场景坐标系与 `SET_STATE`），**M2 才做图像级核验**。**禁止**：索要图片作为继续条件 · 因缺图阻断交付 · 声称"已核验/与资产图册一致"而实际从未见过图（机检兜底见 `sd-feed-engine/scripts/gate_check.py` 闸门 6B）。
-- 投喂格式唯一权威 = 总控 `short-drama-director/references/model-adapters.md`（七段式）/ `short-drama-director/references/h3-adapter.md`（H3 六段式）。
-- Seedance 2.5 与 2.0 语法彻底分开禁混写；Seedance 侧时间轴整数秒口径（禁时间码、禁小数秒）；H3 侧切点按 H3 原生 MM:SS.mmm。
+- 投喂格式唯一权威 = 总控 `short-drama-director/references/model-adapters.md`（【视频 X】标准）/ `short-drama-director/references/h3-adapter.md`（H3 六段式）。
+- Seedance 2.5 与 2.0 语法彻底分开禁混写；Seedance 侧时间轴 `【x-x 秒】：` 弹性呼吸口径（支持小数秒与 0.3s~0.8s 亚秒级冲击帧，禁 ≥3 连等长镜）；H3 侧切点按 H3 原生 MM:SS.mmm。
 - 改稿必跑总控「局部验证 → 联动冲突检查 → 全量审核」三步复验闭环并附《改动复验报告》。

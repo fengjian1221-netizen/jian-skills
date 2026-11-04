@@ -2,14 +2,14 @@
 
 # 🎬 漫剧老李 AIGC 创作全流程 Skill
 
-## **V7.4.26 多技能套装版** · Short-Drama Director Suite
+## **V7.5.0 多技能套装版** · Short-Drama Director Suite
 
-> **版本**：V7.4.26 多技能套装版（Suite）· **现行唯一版本口径**
+> **版本**：V7.5.0 多技能套装版（Suite）· **现行唯一版本口径**
 
 > 🎨 面向 **AIGC 视听创作** 的工业级全流程技能包（**1 总控 + 12 子技能 · 四层纵深**）
 > 从创意立项、剧本、资产、分镜到视频模型投喂提示词与独立质检 —— 给 AI 助手 / LLM 直接调用
 
-![Version](https://img.shields.io/badge/版本-V7.4.26--套装版-6a5acd)
+![Version](https://img.shields.io/badge/版本-V7.5.0--套装版-6a5acd)
 ![Structure](https://img.shields.io/badge/结构-1%20总控%20%7C%2012%20子技能-8e44ad)
 ![Rulebooks](https://img.shields.io/badge/规则库-50%20份-00b4d8)
 ![Files](https://img.shields.io/badge/文件-164-2ec4b6)
@@ -179,7 +179,7 @@ python3 short-drama-director/scripts/build_board_lite.py <项目.md>
 ## 📦 项目结构
 
 ```
-lixiaoxiao9888-create/manju-laoli-skill/        # V7.4.26 多技能套装（164 文件）
+lixiaoxiao9888-create/manju-laoli-skill/        # V7.5.0 多技能套装（164 文件）
 ├── README.md                                   # 本落地页（中文 + English）
 ├── LICENSE / .gitignore
 ├── short-drama-director/                       # L0 总控（62 文件 · 50 份规则库 · 机检脚本）
@@ -205,7 +205,7 @@ lixiaoxiao9888-create/manju-laoli-skill/        # V7.4.26 多技能套装（164 
 
 ## 📜 更新历史
 
-- **V7.4.26**（2026-10-21）— **审计补丁 P1 + P4.5 交付标配/机检**：修 9 处执行链缺陷——① P4.5 触发条件机检化（契约 **CT5-P45**：≥3 人同框 / ≥2 个 `@//scn/` 场景 / 单段跨 2 场，命中不附即 FAIL），本仓再升为**默认必出**；② 新增 P3/P4 **最小必读集**（治 12.1 万 token vs 8k 预算）；③ 七段式镜行升级**五要素**（景别・焦段・机位角度・运镜（用途标签）），资产引用升级 `@//scn/` `@//chr/` `@//prp/`（旧写法兼容）；④ **C3 升 FAIL**（段时码必须从 00:00 起）、新增 **C18g2**（缺焦段）、`--by-segment` 改默认、C11b/C18m 加 D 锁②硬切豁免、C12 版式豁免、补 9 个运镜词、C17c/C26b/C5/C29/C19c 误报修复、C31 区分项目包/投喂单元；⑤ 新增 `check_p45.py`（P450~P458）结构机检。创作口径（锁 / 七段式 / 画风 / 打戏）未动。
+- **V7.5.0**（2026-10-21）— **审计补丁 P1 + P4.5 交付标配/机检**：修 9 处执行链缺陷——① P4.5 触发条件机检化（契约 **CT5-P45**：≥3 人同框 / ≥2 个 `@//scn/` 场景 / 单段跨 2 场，命中不附即 FAIL），本仓再升为**默认必出**；② 新增 P3/P4 **最小必读集**（治 12.1 万 token vs 8k 预算）；③ 七段式镜行升级**五要素**（景别・焦段・机位角度・运镜（用途标签）），资产引用升级 `@//scn/` `@//chr/` `@//prp/`（旧写法兼容）；④ **C3 升 FAIL**（段时码必须从 00:00 起）、新增 **C18g2**（缺焦段）、`--by-segment` 改默认、C11b/C18m 加 D 锁②硬切豁免、C12 版式豁免、补 9 个运镜词、C17c/C26b/C5/C29/C19c 误报修复、C31 区分项目包/投喂单元；⑤ 新增 `check_p45.py`（P450~P458）结构机检。创作口径（锁 / 七段式 / 画风 / 打戏）未动。
 - **V7.4.25**（2026-10-19）— **交付层与门禁实战回写**：以《兽瞳》第01集全流程实跑为样本，修四类反复踩到的坑——① **交付件数失控**（单集曾产出 15 文件/10 目录）：定死「对外最多 3 件」（主文档 / 看板 / P4.5），md 正文只放资产提示词 + 分镜提示词，其余归 `_内部_` 前缀的内部档案，命名全中文；② **资产提示词结构性缺陷**：新增 `scripts/check_asset_blocks.py` 门禁（A1 跨条引用「同上/同规格/见母版/同图N」、A2 16:9、A3 九宫格八字段、A4·A5 角色四格与「主图」旧称致 5 格、A6 道具四格字段名），P2 出稿 FAIL 清零；③ **机检口径失真**：`validate_prompt.py` 新增 `--by-segment`，多段稿逐段独立判据——整份送检会把 3×30s 累计成 90s 一段，误判打戏档触发 C21/C22 并让 C10/C15 失真；④ 新增 `references/delivery-pitfalls.md`（交付翻车清单）与 P4「段级红线八条」（特写≥25% / 单镜≤6s / 机位不重复 / C32 背景光线写在台词前 / 运镜词表 / 人数肯定句 / 段内镜号从镜1 起 / 段缝换景别）。创作知识层（剧本、表演、打戏、画风）未改动。
 - **V7.4.23**（2026-10-16）— **粉丝排查报告核验 + 全包「文档法定词 × 机检词表」审计全修**：粉丝（Claude / Codex）报告指 `camera-specs-15rules.md` §二 法定运镜「**命中瞬间定格（Hit-Stop）**」未入机检词表 `CAM_FAMILIES` → **照文档写必报 C18g 假错**，且为规避该误报改写成「固定」的执行者又被 **C22c** 报"缺顿"（两门夹杀、无合规写法）。**逐条端到端复现，属实**。核验中把该根因**推广到全包反向核对**，另查出 **25 个词解析为空集**（定格族 11 词 + `环移` + 模式F 运镜库 7 词 + 焦点纵深拉移…），并修 **2 处 V7.4.21 本轮引入的缺陷**：① **C32 与「光影单一基准」教义互锁夹杀**（教义要求「时段光影立【场景资产】为唯一基准、镜行只写增量」，C32 却逐镜索要光线方向）→ 改**段级继承口径**（段内有基准则逐镜只判背景）；② **`BG_ELEM_RE` 过窄**（「脚下泥土犁出两道浅沟，竹叶被气浪掀飞」被漏判成"无背景"）→ 补自然环境元素 + 环境行为词。另修 `model-adapters.md` 两节**重复编号 5.0.5**（光影单一基准改 **§5.0.5b**）、新增 **`◑17` 全包零语法告警门**。⚠️ **V7.4.21 的交付 zip 请勿推送**（含上述 C32 互锁），以 V7.4.25 为准
 - **V7.4.21**（2026-10-16）— **粉丝「森林」视感反馈全修**（4 条 + 追加 3 条，逐条核验真伪后才动手）：新增 **§七 四轴联动矩阵**（景别×焦段×机位×运镜 8 档一次性写齐 + 3 条组合级禁令 + 自检四问）· **§一 景别占比预算表**（六组 × 文戏/打戏分列，补「景别维度只有特写一个区间」缺口）· **§二 景别→焦段逐级对照表**（补齐中近景 / 近景空档）· **§四 变焦族四件套**（推拉镜 / 光学变焦 Zoom / 急速变焦 Snap Zoom / 滑动变焦 Dolly Zoom 四条独立成档，并修机检别名误映射——`Zoom` 曾被错归滑动变焦且被吞进「全片 ≤1」名额）；资产体系新增**第四族「群像资产卡 `GRP-N`」**（7 字段 + 3 格出图 + `@群体名` 锚点，与 `@人名` 同栏同待遇）；画面段补**最低三要素**（人物位置/姿态 + **背景元素** + **光线方向**）。机检：**子检查码 98 → 99**（新增 `C18p` 景别占比越界），增量主码 **C27~C32**（新增 `C32` 画面段最低三要素；编号避让——`C18o` / `C30` 已被既有占用，故取 `C18p` / `C32`）；并**根治 `check_package.py` 扫描域**（收敛为 `suite_roots()` 恰 13 目录 + 新增 `◑16` 扫描域锁定断言，不再被仓库根落地页或同级其它技能误伤假 FAIL）
@@ -226,7 +226,7 @@ lixiaoxiao9888-create/manju-laoli-skill/        # V7.4.26 多技能套装（164 
 
 # 🇬🇧 English Overview
 
-## **V7.4.26 Multi-Skill Suite** · Short-Drama Director Suite
+## **V7.5.0 Multi-Skill Suite** · Short-Drama Director Suite
 
 **An industrial, full-pipeline creation skill package for AIGC audiovisual works — from concept lock-in to video-model feed prompts — built for AI agents / LLMs to call directly. One router + 12 sub-skills across a four-layer architecture.**
 
@@ -360,7 +360,7 @@ python3 short-drama-director/scripts/build_board_lite.py <project.md>
 ## 📦 Structure
 
 ```
-lixiaoxiao9888-create/manju-laoli-skill/        # V7.4.26 multi-skill suite (164 files)
+lixiaoxiao9888-create/manju-laoli-skill/        # V7.5.0 multi-skill suite (164 files)
 ├── README.md                                   # landing (Chinese + English)
 ├── LICENSE / .gitignore
 ├── short-drama-director/                       # L0 router (62 files · 48 rulebooks · lint scripts)
@@ -382,7 +382,7 @@ lixiaoxiao9888-create/manju-laoli-skill/        # V7.4.26 multi-skill suite (164
 
 ## 📜 Changelog
 
-- **V7.4.26** (2026-10-21) — **audit patch P1 + P4.5 delivery standard/check**: fixes nine execution-chain defects — ① P4.5 triggers are now machine-checked (contract **CT5-P45**: ≥3 named subjects in one stance block / ≥2 distinct `@//scn/` scenes / a segment spanning 2 scenes; hit without attachment = FAIL), and this repo further makes it **always emitted**; ② new P3/P4 **minimum reading sets** (against the 121k-token vs 8k budget gap); ③ the 7-section shot line gains **five elements** (shot size · focal length · camera angle · movement with usage tag) and asset refs upgrade to `@//scn/` `@//chr/` `@//prp/`; ④ **C3 becomes FAIL** (segment timecodes must start at 00:00), new **C18g2** (missing focal length), `--by-segment` becomes the default, C11b/C18m gain D-lock-② hard-cut exemptions, C12 layout exemptions, nine movement words added, false-positive fixes for C17c/C26b/C5/C29/C19c, and C31 now distinguishes project packages from feed units; ⑤ new `check_p45.py` (P450–P458) structural gate. Creative doctrine unchanged.
+- **V7.5.0** (2026-10-21) — **audit patch P1 + P4.5 delivery standard/check**: fixes nine execution-chain defects — ① P4.5 triggers are now machine-checked (contract **CT5-P45**: ≥3 named subjects in one stance block / ≥2 distinct `@//scn/` scenes / a segment spanning 2 scenes; hit without attachment = FAIL), and this repo further makes it **always emitted**; ② new P3/P4 **minimum reading sets** (against the 121k-token vs 8k budget gap); ③ the 7-section shot line gains **five elements** (shot size · focal length · camera angle · movement with usage tag) and asset refs upgrade to `@//scn/` `@//chr/` `@//prp/`; ④ **C3 becomes FAIL** (segment timecodes must start at 00:00), new **C18g2** (missing focal length), `--by-segment` becomes the default, C11b/C18m gain D-lock-② hard-cut exemptions, C12 layout exemptions, nine movement words added, false-positive fixes for C17c/C26b/C5/C29/C19c, and C31 now distinguishes project packages from feed units; ⑤ new `check_p45.py` (P450–P458) structural gate. Creative doctrine unchanged.
 - **V7.4.25** (2026-10-19) — **delivery-layer and gate hardening, written back from a real run**: based on a full pipeline run of episode 1, four recurring failure classes are fixed — ① **deliverable explosion** (one episode once produced 15 files / 10 folders): hard cap of three external artifacts (main doc / board / P4.5), the md body keeps only asset prompts and shot prompts, everything else moves to `_内部_` internal archives, and all names are localized; ② **structural asset-prompt defects**: new `scripts/check_asset_blocks.py` gate (A1 cross-references such as "same as above / see master / same as image N", A2 16:9, A3 the nine-grid eight fields, A4/A5 four-panel character boards and the retired "main image" wording that yields five panels, A6 prop four-panel field names), FAIL-free before P3; ③ **validation granularity**: `validate_prompt.py --by-segment` validates each 30s segment independently — whole-file parsing stacks 3x30s into one 90s block, mis-classifies it as a combat script (C21/C22) and skews C10/C15; ④ new `references/delivery-pitfalls.md` plus eight per-segment red lines in P4. The creative knowledge layer is unchanged.
 - **V7.4.23** (2026-10-16) — **fan-report verification + suite-wide "doc-legal-word × lint-table" audit pass**: a fan report (Claude / Codex) showed that the camera-movement word 「命中瞬间定格」/ Hit-Stop — *legalized* by `camera-specs-15rules.md` §2 — was absent from the lint table `CAM_FAMILIES`, so **writing it exactly as the docs prescribe raised a false C18g**, while the workaround (rewriting it as 「固定」/ static) got flagged by **C22c** for "missing beat" — a two-gate squeeze with no compliant form. **Reproduced end-to-end; confirmed real.** Generalizing the root cause across the package surfaced **25 more words that resolve to an empty family** (11 hit-stop words + `环移` + 7 mode-F library words + focus-pull …), and fixed **2 defects introduced by V7.4.21 itself**: ① **C32 vs. the single-light-baseline doctrine** (the doctrine says the segment's 时段光影 is the *only* baseline and shot lines carry deltas only, while C32 demanded light direction *per shot*) → switched to a **segment-level inheritance rule**; ② **`BG_ELEM_RE` too narrow** ("脚下泥土犁出两道浅沟，竹叶被气浪掀飞" judged as *no background*) → widened with natural elements and environment-action verbs. Also fixed the **duplicate heading `5.0.5`** in `model-adapters.md` (light baseline → **§5.0.5b**) and added a **`◑17` zero-syntax-warning gate**. ⚠️ **Do not push the V7.4.21 zip** (it carries the C32 mutual lock); ship V7.4.23 instead
 - **V7.4.21** (2026-10-16) — **full fix pass on fan 「森林」's visual feedback** (4 items + 3 follow-ups, each verified before acting): new **§7 four-axis linkage matrix** (shot size × focal length × camera position × movement written out in 8 tiers + 3 combination-level bans + a 4-question self-check) · **§1 shot-size budget table** (6 groups × drama/fight, filling the "shot-size dimension had only the close-up band" gap) · **§2 shot-size → focal-length ladder** (fills the medium-close / close gaps) · **§4 zoom-family quartet** (push/pull · optical Zoom · snap zoom · dolly zoom as four separate entries, fixing the lint alias mis-map where `Zoom` was misfiled as dolly zoom and swallowed by its "≤1 per film" quota); asset system gains a **fourth family — crowd asset card `GRP-N`** (7 fields + 3-grid sheet + `@crowd-name` anchor, same slot as `@name`); the picture segment now requires **three minimum elements** (subject position/pose + **background element** + **light direction**). Lint: **sub-codes 98 → 99** (new `C18p` shot-size ratio out-of-range), incremental codes **C27–C32** (new `C32` picture-segment minimums; numbering avoids taken slots — `C18o` / `C30` were occupied, hence `C18p` / `C32`); **`check_package.py` scan scope fixed** (narrowed to `suite_roots()` = exactly 13 dirs + new `◑16` scope-lock assertion, so the repo-root landing page or sibling skills no longer raise false FAILs)

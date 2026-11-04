@@ -153,7 +153,7 @@ D 自定义 → 你直接描述，我按你的描述建 STYLE_BIBLE
 按 `style-bible-spec.md` 交付规范当场产出 `STYLE_BIBLE.md`（Markdown 表，非 JSON）：
 `style_id / prototype_id / 辅助原型 / 来源风格（仅内部登记）/ AI 落地度 / 九类变量取值 / 参考图职责 / 禁项 / 多时空分支 / 版本`。
 
-随后由 `director-param-library.md` 取 11 槽位 → `style-prefix-blocks.md` 取成品块 → **段 8 STYLE / 段 9 PERFORMANCE** 进入投喂稿（P4，见 `director-to-prompt-protocol.md`）；机检 C23a~f 全程守门（见 `sd-qc-engine/references/machine-check-manual.md`）。
+随后由 `director-param-library.md` 取 11 槽位 → `style-prefix-blocks.md` 取成品块 → **`风格要求：`（≤30字）与场景/镜行物理转译** 进入【视频 X】投喂稿（已废除旧版段8/段9伪参数堆砌）（P4，见 `director-to-prompt-protocol.md`）；机检 C23a~f 全程守门（见 `sd-qc-engine/references/machine-check-manual.md`）。
 
 ## 九、明确不做（防拦路虎 / 防盲目扩充）
 

@@ -6,7 +6,7 @@
 
 本文件是打戏分镜的**输出层转译底座**：提供【写实版 vs 修仙版】双轨制判定，以及【Seedance 2.0（单镜切片）vs Seedance 2.5（一镜成片）】的双档提示词转译引擎，并汇集打戏特效介质三大铁律（38／39／44）与 Seedance 2.5 官方规范（铁律50）。
 
-> 投喂格式权威在总控 short-drama-director 的 model-adapters.md（七段式）；本文件只管打戏分镜内容按 Seedance 双档语法的适配转译，不另立投喂格式。
+> 投喂格式权威在总控 short-drama-director 的 model-adapters.md（【视频 X】标准）；本文件只管打戏分镜内容按 Seedance 双档语法的适配转译，不另立投喂格式。
 
 ---
 

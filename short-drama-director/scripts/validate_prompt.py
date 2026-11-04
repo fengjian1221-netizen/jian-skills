@@ -311,7 +311,7 @@ MAX_CHARS = 4500
 TIME_RE = re.compile(
     r"(\d{1,2}):(\d{2})(?:[.:](\d{1,2}))?\s*[-~～→]\s*(\d{1,2}):(\d{2})(?:[.:](\d{1,2}))?"
     r"|(\d+(?:\.\d+)?)\s*s\s*[-~～→]\s*(\d+(?:\.\d+)?)\s*s"
-    r"|(?:\A|(?<=[\s\[【\]】]))\s*([0-9]|[1-5]\d)(?:\.\d+)?\s*[-~～→]\s*([0-9]|[1-5]\d)(?:\.\d+)?秒",
+    r"|(?:\A|(?<=[\s\[【\]】]))\s*((?:[0-9]|[1-5]\d)(?:\.\d+)?)\s*[-~～→]\s*((?:[0-9]|[1-5]\d)(?:\.\d+)?)(?:秒|\s+秒\s*】)",
     re.I)
 
 
@@ -455,6 +455,11 @@ PURE_AMBIENT_SEG_MAX = 10 # 全段无台词（纯氛围段）时长上限（s）
 # 角色名以「无」开头（如「无名剑客」）属**有台词**，不得被误判。
 NO_LINE_RE = re.compile(r"台词：\s*无(?![\u4e00-\u9fffA-Za-z0-9])")
 DIALOGUE_RE = re.compile(r"台词：\s*(?!无(?![\u4e00-\u9fffA-Za-z0-9]))")
+VX_SEG_START_RE = re.compile(r"^\s*【\s*视频\s*([0-9一二三四五六七八九十X]+)\s*】")
+VX_REAL_SEG_RE = re.compile(r"^\s*【\s*视频\s*([0-9一二三四五六七八九十]+)\s*】", re.M)
+VX_DIALOGUE_RE = re.compile(r"([^\s，。；：、“”\"【（）()]{1,12})说：[“\"]([^”\"]*)[”\"]")
+VX_MONOLOGUE_RE = re.compile(r"([^\s，。；：、“”\"【（）()]{1,12})内心独白：([^（(\n。；]+)")
+VX_BLOAT_RE = re.compile(r"【STYLE[｜|]|【PERFORMANCE[｜|]|UE5次世代|次世代渲染|PBR物理材质|皮肤次表面散射|骨相7\.5|光比\s*\[1:|帧率\s*\[\d+fps", re.I)
 
 # ---- 融合规则补载体组（2026-10-10 并入）----
 # 病因（本次诊断结论）：外部包融合进来的 11 条规则此前**只存在于散文细则**，无任何执行载体——
@@ -512,14 +517,14 @@ C12_TRANSITION_RE = re.compile(r"J-?cut|L-?cut|Whip\s*Pan|Match\s*Cut|Sound\s*Br
 CAM_FAMILIES = {
     "固定": "固定",
     "推镜": "推", "缓推": "推", "慢推": "推", "快推": "推", "急推": "推", "推近": "推", "推入": "推",
-    "拉镜": "拉", "拉远": "拉", "后拉": "拉",
+    "拉镜": "拉", "缓拉": "拉", "慢拉": "拉", "拉远": "拉", "后拉": "拉",
     "横移": "横移", "平移": "横移", "竖移": "竖移",
     # ★摇/移族同义词补全（2026-10-12 修复）：官方示例 storyboard-example.md 镜行头写
     #   「快速平摇」「平摇」，原词表只有「摇镜」→ C18g 连报 2 条"镜行未标注运镜"假告警。
     #   这类"方向+摇/移"复合词是中文分镜稿的高频写法，缺一个就误报一条。
     "平摇": "摇", "横摇": "摇", "直摇": "摇", "摇摄": "摇", "纵摇": "俯仰", "跟摇": "跟",
     "侧移": "横移", "斜移": "横移", "前移": "推", "后移": "拉", "推移": "推", "拉升": "拉",
-    "跟随": "跟", "跟移": "跟",
+    "跟随": "跟", "跟移": "跟", "跟推": "跟", "缓慢跟推": "跟",
     "跟拍": "跟", "跟移": "跟", "摇镜": "摇", "俯仰": "俯仰", "上摇": "俯仰", "下摇": "俯仰",
     "升降": "升降", "环绕": "环绕", "弧形": "环绕",
     "轨道": "轨道", "摇臂": "摇臂",
@@ -557,6 +562,14 @@ CAM_FAMILIES = {
     # ★审计补丁P1 补录：中文分镜稿最高频的「轻X」前缀写法（此前全部解析为空集 → C18g 假告警）
     "轻推": "推", "微推": "推", "轻摇": "摇", "缓摇": "摇", "慢摇": "摇",
     "轻晃": "手持", "微晃": "手持", "轻移": "横移", "缓移": "横移",
+    # ★V7.5.0 大师级电影运镜与高燃战斗运镜词表
+    "希区柯克变焦": "滑动变焦", "子弹时间": "环绕", "360°子弹时间": "环绕", "Bullet Time": "环绕",
+    "滚轴翻转": "滚轴翻转", "Barrel Roll": "滚轴翻转", "贴地极速跟推": "跟", "极速跟推": "跟",
+    "贴地疾冲": "推", "贴地高速俯冲": "推", "高速下降推进": "推", "推进": "推", "疾推": "急推",
+    "急拉": "拉", "疾拉": "拉", "移焦": "移焦", "Rack Focus": "移焦",
+    "穿越穿梭": "穿梭", "Fly-Through": "穿梭", "穿梭": "穿梭",
+    "升降格变速": "升格", "Speed Ramping": "升格", "急速甩镜": "甩",
+    "跟进": "跟", "环拍": "环绕", "越肩": "过肩", "过肩": "过肩", "正反打": "固定",
 }
 # C18i 无动机运镜（§四 手持三级烈度：烈度必须由情绪买单，禁止无理由晃动）
 CAM_MOTIVELESS = ("无动机", "毫无动机", "没有动机", "无理由晃动", "无理由地晃动",
@@ -1045,7 +1058,7 @@ COMBAT_CLOSE_RATIO = 0.33        # C21c 贴身对招占比下限（15s 片 ≈5s
 COMBAT_SAME_RUN = 3              # C21a/C21d 连续多少个区间命中即告警（防单点误报）
 # C21d 机位签名（景别 + 角度）：相邻区间签名完全相同 → 构图未变
 COMBAT_SIZE_RE = re.compile(r"极特写|大特写|紧特写|超特写|特写|中近景|近景|中全景|中景|大全景|全景|大远景|远景")
-COMBAT_ANGLE_RE = re.compile(r"平视|仰视|俯视|略仰|略俯|顶拍|正侧|斜角|侧角|过肩|主观|背面|正面|荷兰角")
+COMBAT_ANGLE_RE = re.compile(r"平视|仰视|俯视|仰拍|俯拍|侧拍|斜拍|斜仰|斜俯|微仰|微俯|略仰|略俯|顶拍|正侧|斜侧|斜角|侧角|过肩|主观|背面|正面|荷兰角|低角度|高机位|低机位|微距|\d+\s*mm")
 
 # ---- C22 打戏节奏与渲染负载护栏（sd-combat-engine/references/combat-rhythm-and-load-guardrails.md）----
 # 病根档案（勿删）：稿机检 PASSED/0 error/0 warning，出片仍"呆滞·像小孩打架"。逐帧复盘四条病根：
@@ -1194,7 +1207,7 @@ def _combat_ranges(text):
     """
     out, seen = [], set()
     for i, line in enumerate(text.splitlines(), 1):
-        probe = re.sub(r"^[\s\-*>•]+", "", line)
+        probe = re.sub(r"^[\s\-*>•\[【]+", "", line)
         if not (re.match(r"\d", probe) or SHOT_TAG_RE.search(line)):
             continue
         rs = []
@@ -1434,14 +1447,16 @@ def _c23_check(text, style_source=None):
     # ---- 段定位与 C23a ----
     # ★行首锚定：段标记必须独占一行（【STYLE｜…）——文档/说明文字里行中出现的
     #   「【STYLE」字面量不算（冒烟测试抓到：示例稿头部说明把段定位带偏）
+    _is_vx_c23 = bool(VX_SEG_START_RE.search(text) or re.search(r"场景描述\s*[：:]", text))
     _m8 = re.search(r"(?m)^【STYLE", text)
     _m9 = re.search(r"(?m)^【PERFORMANCE", text)
     has_s8 = bool(_m8)
     has_s9 = bool(_m9)
-    if not has_s8:
-        issues.append("C23a 缺段8【STYLE｜视觉风格 · 全片锁死】——I 画风锁未落地（选卡/默认卡后由系统生成）")
-    if not has_s9:
-        issues.append("C23a 缺段9【PERFORMANCE｜表演与动作 · 全片锁死】")
+    if not _is_vx_c23:
+        if not has_s8:
+            issues.append("C23a 缺段8【STYLE｜视觉风格 · 全片锁死】——I 画风锁未落地（选卡/默认卡后由系统生成）")
+        if not has_s9:
+            issues.append("C23a 缺段9【PERFORMANCE｜表演与动作 · 全片锁死】")
 
     def _block(tag):
         m = re.search(r"(?m)^" + re.escape(tag), text)
@@ -1511,7 +1526,7 @@ def _c23_check(text, style_source=None):
                          "——渲染负载超支，砍到 3 类以内")
 
     # ---- C23d② 转译丢失 ----
-    if style_source:
+    if style_source and not _is_vx_c23:
         dims = ["成像底层", "形体骨相", "影调区间", "色彩区间", "空气介质",
                 "光学区间", "材质响应", "特效语言", "禁项"]
         hit_dims = [d for d in dims if d in style_block]
@@ -1562,7 +1577,7 @@ def _split_segments(text):
     第一个【站位声明】——段1 若是单人段，段2 之后的"B 就不见了"全部漏检（2026-10-10 修正）。
     """
     lines = text.splitlines()
-    idxs = [i for i, l in enumerate(lines) if l.strip().startswith("【画幅风格】")]
+    idxs = [i for i, l in enumerate(lines) if l.strip().startswith("【画幅风格】") or bool(VX_SEG_START_RE.match(l))]
     if not idxs:
         return [("全文", 1, text)]
     segs = []
@@ -1603,8 +1618,10 @@ def _shot_head(line):
     """
     m = SHOT_TAG_RE.search(line)
     if not m:
-        return ""
-    rest = line[m.end():].lstrip(" 	,，")
+        m = re.search(r"【\s*[0-9:.]+\s*[-~～→]\s*[0-9:.]+\s*秒?\s*】\s*[：:]?", line)
+        if not m:
+            return ""
+    rest = line[m.end():].lstrip(" 	,，：:")
     # 若镜号在时码前（如 `[镜头1] 0-3秒，中景·平视…`），先剥掉前导时码
     tm = TIME_RE.match(rest)
     if tm:
@@ -1616,11 +1633,15 @@ def _shot_head(line):
         if "·" in parts[0]:
             head = parts[0]
         else:
+            is_vx_line = bool(re.match(r"^\s*【\s*[0-9:.]+\s*[-~～→]", line))
             kept = [parts[0]]
-            for pt in parts[1:]:
-                if "@" in pt or len(pt.strip()) > 6 or not (COMBAT_SIZE_RE.search(pt) or COMBAT_ANGLE_RE.search(pt) or _cam_families(pt)):
+            for idx_pt, pt in enumerate(parts[1:], 1):
+                if "@" in pt or "说：" in pt or "内心独白：" in pt or len(pt.strip()) > 48:
                     break
-                kept.append(pt)
+                if COMBAT_SIZE_RE.search(pt) or COMBAT_ANGLE_RE.search(pt) or _cam_families(pt) or (is_vx_line and idx_pt <= 2):
+                    kept.append(pt)
+                else:
+                    break
             head = "，".join(kept)
     return head
 
@@ -1663,8 +1684,9 @@ def validate(text, model="2.5", mode="new", track="1", combat="auto", c23="auto"
         if not _d_p:
             _cnt_p = sum(1 for _s, _e, _ln in _trp
                          if 0 <= _ln - 1 < len(_st_lines_p)
-                         and "台词：" in _st_lines_p[_ln - 1]
-                         and "无" not in _st_lines_p[_ln - 1].split("台词：")[1][:3])
+                         and (("台词：" in _st_lines_p[_ln - 1]
+                               and "无" not in _st_lines_p[_ln - 1].split("台词：")[1][:3])
+                              or bool(VX_DIALOGUE_RE.search(_st_lines_p[_ln - 1]))))
             _d_p = _cnt_p >= 2
         if _d_p:
             _dlg_line_ranges.append((_sb, _sb + len(_st_lines_p)))
@@ -1698,8 +1720,11 @@ def validate(text, model="2.5", mode="new", track="1", combat="auto", c23="auto"
         _st_lines = _st.splitlines()
         _is_dlg = _in_dlg(_sb)
         _is_cmb_seg = _combat_on(_st, combat)
-        _div = 2 if (_is_dlg or _is_cmb_seg) else 3
+        _is_vx = bool(re.search(r"【视频\s*[0-9一二三四五六七八九十X]+】|场景描述\s*[：:]", text))
+        _div = 2 if (_is_dlg or _is_cmb_seg or _is_vx) else 3
         _cap = -(-int(_d + 0.5) // _div) or 1
+        if _is_vx:
+            _cap = max(_cap, 14 if model == "2.5" else 8)
         if _n > _cap:
             issues.append(f"C2 [{_sn}] 镜头数 {_n} > 段长÷{_div}s 上限 {_cap}"
                           + ("（对话段按 ÷2s 放宽以支持正反打 / 打戏段按 ÷2s 支持 2~3s 黄金颗粒度细切）" if (_is_dlg or _is_cmb_seg) else ""))
@@ -1708,7 +1733,8 @@ def validate(text, model="2.5", mode="new", track="1", combat="auto", c23="auto"
             if _e <= _s:
                 issues.append(f"C3 第{_g}行 时间码倒挂 {_s}->{_e}")
             elif _e - _s < (2 if (_is_dlg or _is_cmb_seg) else 3):
-                warns.append(f"C2 第{_g}行 单镜 {round(_e - _s, 2)}s <{2 if (_is_dlg or _is_cmb_seg) else 3}s（碎切风险）")
+                if (_e - _s) < 0.3:
+                    warns.append(f"C2 第{_g}行 单镜 {round(_e - _s, 2)}s 过短（建议 ≥0.3s）")
             elif _e - _s > 6:
                 warns.append(f"C10 第{_g}行 单镜 {round(_e - _s, 2)}s >6s（talking head 风险：单镜预算 3~5s，长台词按 dialogue-doctor 拆 2~3 镜正反打/反应镜头）")
         for (_s1, _e1, _l1), (_s2, _e2, _l2) in zip(_tr_seg, _tr_seg[1:]):
@@ -1742,17 +1768,12 @@ def validate(text, model="2.5", mode="new", track="1", combat="auto", c23="auto"
         for w in ("顿挫", "微停顿", "咬住"):
             if w in text:
                 issues.append(f"C5 2.0 禁顿挫词「{w}」（会渲染成真停顿）")
-    elif "[SFX" not in text.upper() and "【音效】" not in text:
-        # ★审计补丁P1 修：标准七段式稿件用独立【音效】栏承载音效（平台并不要求写成 [SFX:] 行内标记），
-        #   旧版见不到 [SFX 就报，属假告警；两栏任一在位即通过。
+    elif "[SFX" not in text.upper() and "【音效】" not in text and "音效：" not in text and "音效:" not in text and "音效" not in text:
         warns.append("C5 2.5 建议用 [SFX:] 原生音效标记，或用独立【音效】栏承载")
 
-    # C6 画幅回填
-    # ★段名独立成行兼容（2026-10-12 修复）：原正则要求画幅值与【画幅风格】同在一行，
-    #   但 sd-real-engine/references/storyboard-example.md 用「段名独立成行、内容下一行」写法
-    #   （`【画幅风格】\n16:9 横屏, …`）——该稿自称"可直接整组复制投喂"，用户照抄即 C6 FAIL。
-    #   `[^【\n]` 保证不跨到下一个段名（不会把【场景资产】里的画幅词误算作本段回填）。
-    if not re.search(r"aspect_ratio\s*=", text) and not re.search(
+    # C6 画幅回填（【视频 X】标准格式禁止体内出现横屏/竖屏字眼，画幅由外部参数承载，予以豁免）
+    _is_vx_c6 = bool(re.search(r"【视频\s*[0-9一二三四五六七八九十X]+】|场景描述\s*[：:]", text))
+    if not _is_vx_c6 and not re.search(r"aspect_ratio\s*=", text) and not re.search(
             r"【画幅风格】\s*(?:\n\s*)?[^【\n]{0,100}?(16:9|9:16|21:9|1:1)", text):
         issues.append("C6 缺画幅回填（体内 aspect_ratio= 或【画幅风格】段内写 16:9/9:16/21:9）")
 
@@ -1799,19 +1820,89 @@ def validate(text, model="2.5", mode="new", track="1", combat="auto", c23="auto"
             warns.append(f"C6b 画幅口径越界：锁定 9:16 竖屏，正文却出现横屏构图词 {_land}——"
                          "竖屏禁横向展开写法，构图按竖屏套版（aspect-ratio-adaptation.md §一）")
 
-    # C7 七段式核心栏（段7【强制禁止项】可由前置变体【强制禁止项｜前置】等价满足；多段稿逐段核查）
+    # C7 交付格式核心栏校验（支持全新【视频 X】标准格式与传统七段式）
+    _is_video_x_format = bool(re.search(r"【视频\s*[0-9一二三四五六七八九十X]+】|场景描述\s*[：:]", text))
     _has_global_ban = bool(BAN_FRONT_TAG.search(text))
-    missing = [seg for seg in SEVEN_SEGMENTS
-               if seg not in text and not (seg == "【强制禁止项】" and _has_global_ban)]
-    if missing:
-        issues.append(f"C7 七段式缺栏 {missing}（V7.3.0 主格式唯一命名 · 域命名沿革，段序见 model-adapters §5；"
-                      f"段7 亦可用前置【强制禁止项｜前置】等价满足——禁项单点，二选一）")
-    elif len(_segments_time) > 1:
-        for _sn7, _sb7, _st7 in _segments_time:
-            _m7 = [seg for seg in SEVEN_SEGMENTS
-                   if seg not in _st7 and not (seg == "【强制禁止项】" and (_has_global_ban or BAN_FRONT_TAG.search(_st7)))]
-            if _m7:
-                issues.append(f"C7 [{_sn7}] 七段式缺栏 {_m7}（多段稿每段均须具备完整七段式核心栏，段7 可由全文前置【强制禁止项｜前置】等价满足）")
+    if _is_video_x_format:
+        # 【视频 X】唯一工业标准格式校验
+        missing = []
+        if not re.search(r"场景描述\s*[：:]", text):
+            missing.append("场景描述：")
+        if not re.search(r"角色\s*[：:]", text):
+            missing.append("角色：")
+        if missing:
+            issues.append(f"C7 【视频 X】标准格式缺核心栏 {missing}（必须包含 场景描述：/ 角色：/ 风格要求：/ 【x-x 秒】：）")
+        elif len(_segments_time) > 1:
+            for _sn7, _sb7, _st7 in _segments_time:
+                _m7 = []
+                if not re.search(r"场景描述\s*[：:]", _st7):
+                    _m7.append("场景描述：")
+                if not re.search(r"角色\s*[：:]", _st7):
+                    _m7.append("角色：")
+                if _m7:
+                    issues.append(f"C7 [{_sn7}] 【视频 X】标准格式缺核心栏 {_m7}")
+        # V7.5.0 反旧规冲突硬门禁：严禁伪技术参数污染、严禁混用旧版七段式栏位与旧台词括号语法
+        _bloat_hits = sorted(set(m.group(0) for m in VX_BLOAT_RE.finditer(text)))
+        if _bloat_hits:
+            issues.append(f"C7 伪技术参数/旧画风块污染 {_bloat_hits}——V7.5.0 严禁堆砌【STYLE｜】/【PERFORMANCE｜】/UE5/PBR/光比区间等空洞参数，注意力必须100%留给物理动作与运镜")
+        _legacy_cols = [seg for seg in SEVEN_SEGMENTS if seg in text]
+        if _legacy_cols:
+            issues.append(f"C7 新旧格式混用冲突：检测到旧版七段式栏位 {_legacy_cols} 混入【视频 X】稿件")
+        if "台词：【" in text:
+            issues.append("C7 对白语法冲突：【视频 X】格式严禁混用旧版 `台词：【角色：“…”】`，须统一使用 `角色名说：“XXX”`")
+        # V7.5.0 规则7：对白与内心独白硬字数上限 & 独白标准尾注校验
+        _vx_lines = text.splitlines()
+        for _sn_v, _sb_v, _st_v in _segments_time:
+            _tr_v = parse_time_ranges(_st_v)
+            _st_v_lines = _st_v.splitlines()
+            # 规则6：严禁连续出现 3 个以上相同秒数的机械等长切片
+            _durs_v = [round(_ev - _sv, 2) for _sv, _ev, _lv in _tr_v]
+            for _ki in range(len(_durs_v) - 2):
+                if _durs_v[_ki] == _durs_v[_ki + 1] == _durs_v[_ki + 2]:
+                    issues.append(
+                        f"C13 [{_sn_v}] 机械等长切片违规：连续 3 个镜头时长均为 {_durs_v[_ki]}s——"
+                        "V7.5.0 严禁连续 3 镜相同秒数（禁止机械 3s+3s+3s），长镜(3.5~5s)与短镜(1.5~2.5s)/微镜头(0.3~0.8s)必须交错对冲"
+                    )
+                    break
+            for _sv, _ev, _lv in _tr_v:
+                if not (1 <= _lv <= len(_st_v_lines)):
+                    continue
+                _vline = _st_v_lines[_lv - 1]
+                _vdur = max(0.1, round(_ev - _sv, 2))
+                _g_ln = _sb_v + _lv - 1
+                for _dm in VX_DIALOGUE_RE.finditer(_vline):
+                    _dtxt = re.sub(r"[\s，。！？、；：…—\"'（）()《》【】\[\],.!?;:]+", "", _dm.group(2))
+                    _dlim = int(round(_vdur * 3.0 + 0.2))
+                    if len(_dtxt) > _dlim:
+                        issues.append(
+                            f"C16 第{_g_ln}行 对白超字数硬上限（{_vdur:g}s 镜头「{_dm.group(2)}」共 {len(_dtxt)} 字 > 上限 {_dlim} 字；"
+                            "铁律：2s≤6字｜3s≤9字｜4s≤12字，超长台词必须拆镜切换景别）"
+                        )
+                if "内心独白：" in _vline:
+                    if not ("无口型" in _vline and "画外音" in _vline and "嘴部无任何开口动作" in _vline):
+                        issues.append(
+                            f"C14 第{_g_ln}行 内心独白缺少标准闭口声明——须写为：`角色名内心独白：XXX（内心独白无口型，是画外音，嘴部无任何开口动作）`"
+                        )
+                    for _mm in VX_MONOLOGUE_RE.finditer(_vline):
+                        _mtxt = re.sub(r"[\s，。！？、；：…—\"'（）()《》【】\[\],.!?;:]+", "", _mm.group(2))
+                        _mlim = int(round(_vdur * 4.0 + 0.2))
+                        if len(_mtxt) > _mlim:
+                            issues.append(
+                                f"C14 第{_g_ln}行 内心独白超字数硬上限（{_vdur:g}s 镜头共 {len(_mtxt)} 字 > 上限 {_mlim} 字；"
+                                "铁律：2s≤8字｜3s≤12字｜4s≤16字）"
+                            )
+    else:
+        missing = [seg for seg in SEVEN_SEGMENTS
+                   if seg not in text and not (seg == "【强制禁止项】" and _has_global_ban)]
+        if missing:
+            issues.append(f"C7 七段式缺栏 {missing}（段序见 model-adapters §5；"
+                          f"段7 亦可用前置【强制禁止项｜前置】等价满足——禁项单点，二选一）")
+        elif len(_segments_time) > 1:
+            for _sn7, _sb7, _st7 in _segments_time:
+                _m7 = [seg for seg in SEVEN_SEGMENTS
+                       if seg not in _st7 and not (seg == "【强制禁止项】" and (_has_global_ban or BAN_FRONT_TAG.search(_st7)))]
+                if _m7:
+                    issues.append(f"C7 [{_sn7}] 七段式缺栏 {_m7}（多段稿每段均须具备完整七段式核心栏，段7 可由全文前置【强制禁止项｜前置】等价满足）")
 
     # C24 禁项单点纪律（逐段 · 2026-10-10 修正多段误报）
     #   口径：**每个投喂单元（段）只允许一处禁项块**。旧实现按全稿计数 → 多段同文件
@@ -1830,7 +1921,7 @@ def validate(text, model="2.5", mode="new", track="1", combat="auto", c23="auto"
     _pre_n = _ban_count(_pre_blob)
     _seg_ban = [(n, _ban_count(t)) for n, _b, t in _segments_time]
     _dups = [f"{n}×{c}" for n, c in _seg_ban if c > 1]
-    if ban_total == 0:
+    if ban_total == 0 and not _is_video_x_format:
         issues.append("C24b 缺禁项块——段7【强制禁止项】或前置【强制禁止项｜前置】必须二选一（禁项单点纪律）")
     elif _dups:
         issues.append(f"C24a 禁项重复（段内 {', '.join(_dups)}）——每个投喂单元（段）只保留一处禁项块："
@@ -1884,8 +1975,8 @@ def validate(text, model="2.5", mode="new", track="1", combat="auto", c23="auto"
         # 景别只能写它装得下的东西：特写不装胸部以下；近景不装全身/完整站位。
         if CU_SHOT_RE.search(_pic):
             _low = LOWER_BODY_RE.search(_pic)
-            # 发力链豁免：命中词紧前 4 字是发力动词 → 这是动作链，不是构图越界
-            if _low and LOWER_BODY_ACTION.search(_pic[max(0, _low.start() - 4):_low.start()]):
+            # 发力链与局部特写豁免：命中词前后紧邻发力动词（如「蹬地右脚」「右脚猛蹬」），或本镜为纯足部/腿部局部特写（不含面部五官词）→ 非构图越界
+            if _low and LOWER_BODY_ACTION.search(_pic[max(0, _low.start() - 4):min(len(_pic), _low.end() + 6)]):
                 _low = None
             if _low:
                 warns.append(f"C18f 第{ln_i}行 特写承载胸部以下身体「{_low.group(0)}」——"
@@ -2002,7 +2093,8 @@ def validate(text, model="2.5", mode="new", track="1", combat="auto", c23="auto"
         if is_narr and is_vo:
             vo_lines.append((ln_i, pic_seg))
         # ① 声画分离红线：OS 镜行画面段含开口词
-        if is_os and MOUTH_PAT.search(pic_seg):
+        _pic_clean_os = re.sub(r"无(?:任何)?开口(?:动作)?|嘴(?:部)?不(?:动|张|开口)", "", pic_seg)
+        if is_os and MOUTH_PAT.search(_pic_clean_os):
             issues.append(f"C14 第{ln_i}行 OS 声画分离红线：画面段出现开口词——独白发声时角色必须闭口，"
                           "改闭口神态微特写承载（嘴唇紧闭/瞳孔/手指，见 vo-os-weaving.md 纪律 2）")
         # ② OS/VO 写进台词字段（台词字段只装画内开口对白）
@@ -2011,9 +2103,13 @@ def validate(text, model="2.5", mode="new", track="1", combat="auto", c23="auto"
         # ③ OS/VO 使用 {} 台词字符（锁口型必穿帮）
         if snd_seg and re.search(r"\{[^}]*\}", snd_seg):
             issues.append(f"C14 第{ln_i}行 OS/VO 使用 {{}} 台词字符——{{}} 是锁口型对白通道，画外声禁用；走声音段文字标注（见 vo-os-weaving.md §二）")
-        # 配额统计（中文字符）
-        seg = snd_seg if snd_seg else pic_seg
-        vo_os_chars += len(re.findall(r"[\u4e00-\u9fa5]", seg))
+        # 配额统计（中文字符；【视频 X】行内独白只计独白正文，不把整行画面动作与闭口括号声明算入配额）
+        _vx_m_all = VX_MONOLOGUE_RE.findall(line)
+        if _vx_m_all and not snd_seg:
+            vo_os_chars += sum(len(re.findall(r"[\u4e00-\u9fa5]", _mt)) for _, _mt in _vx_m_all)
+        else:
+            seg = snd_seg if snd_seg else pic_seg
+            vo_os_chars += len(re.findall(r"[\u4e00-\u9fa5]", seg))
     if not is_narr:
         # 剧情演绎赛道（①②④）：VO/OS 是配额制调味料，三项篇幅卡口按段独立核算（防多段稿全篇累加误报）
         _c14_segs = _segments_time if _segments_time else [("全文", 1, text)]
@@ -2033,8 +2129,12 @@ def validate(text, model="2.5", mode="new", track="1", combat="auto", c23="auto"
                 _di14 = _l14.find("台词：")
                 _ps14 = _l14[:_si14] if _si14 >= 0 else _l14[:_di14] if _di14 >= 0 else _l14
                 _ss14 = _l14[_si14:] if _si14 >= 0 else ""
-                _seg14 = _ss14 if _ss14 else _ps14
-                _ch14 += len(re.findall(r"[\u4e00-\u9fa5]", _seg14))
+                _vx_m14 = VX_MONOLOGUE_RE.findall(_l14)
+                if _vx_m14 and not _ss14:
+                    _ch14 += sum(len(re.findall(r"[\u4e00-\u9fa5]", _mt)) for _, _mt in _vx_m14)
+                else:
+                    _seg14 = _ss14 if _ss14 else _ps14
+                    _ch14 += len(re.findall(r"[\u4e00-\u9fa5]", _seg14))
             _pfx14 = f"[{_sn14}] " if len(_c14_segs) > 1 else ""
             if _os14 > OS_MAX_SHOTS:
                 warns.append(f"C14 {_pfx14}段内 OS 内心独白 {_os14} 镜 > 上限 {OS_MAX_SHOTS}——独白是配额制工具，超量即广播剧化（vo-os-weaving.md 纪律 1）")
@@ -2068,7 +2168,7 @@ def validate(text, model="2.5", mode="new", track="1", combat="auto", c23="auto"
 
     # C15 拉伸凑时（法则 17：总时长同样由内容倒推，禁拉伸凑满剧本标注时长）
     lines_all = text.splitlines()
-    has_dialogue = bool(DIALOGUE_RE.search(text))
+    has_dialogue = bool(DIALOGUE_RE.search(text) or VX_DIALOGUE_RE.search(text) or VX_MONOLOGUE_RE.search(text))
     if tr:
         for s, e, ln in tr:
             line = lines_all[ln - 1] if 0 < ln <= len(lines_all) else ""
@@ -2153,6 +2253,14 @@ def validate(text, model="2.5", mode="new", track="1", combat="auto", c23="auto"
                 _zw_block += _lines[_j]
                 _j += 1
             _zw_people = ZW_PERSON_RE.findall(_zw_block) or _zw_people_loose(_zw_block)
+        else:
+            for _rl in _lines:
+                _rm = re.match(r"^\s*角色\s*[：:](.+)$", _rl)
+                if _rm:
+                    for _rc in re.split(r"[，,、；;]", _rm.group(1)):
+                        _rn = re.sub(r"[（(].*?[）)]", "", _rc).strip()
+                        if _rn and _rn not in ("无", "留空"):
+                            _zw_people.append(_rn)
         _shots = [(_seg_base + n, l) for n, l in enumerate(_lines) if TIME_RE.search(l)]
         _dlgs = [(n, l, l.find("台词：")) for n, l in _shots
                  if l.find("台词：") >= 0 and not NO_LINE_RE.match(l, l.find("台词："))]
@@ -2261,7 +2369,7 @@ def validate(text, model="2.5", mode="new", track="1", combat="auto", c23="auto"
     #   保守判据（宁漏勿误）：段内出现任一处光影信号即放行（"时段光影："或镜行主光/轮廓/眼神/冷暖等词）。
     _LIGHT_SIG = re.compile(
         r"时段光影|主光|侧光|逆光|顶光|底光|轮廓光|眼神光|边缘光|背光|光向|光质|硬光|柔光|散射"
-        r"|冷暖|暖金|冷蓝|暖黄|色温|天光|霓虹|钨丝|丁达尔|光斑|光影|补色|打光|布光|月光|烛光|日光")
+        r"|冷暖|暖金|冷蓝|暖黄|色温|天光|霓虹|钨丝|丁达尔|光斑|光影|补色|打光|布光|月光|烛光|日光|光线|冷光|暖光|火光|霞光|晨光|暮光|阴云|暗光")
     for (_nm_seg, _b_seg, _l_seg, _blk_seg, _p_seg, _s_seg, _d_seg) in seg_zw:
         if not _LIGHT_SIG.search("".join(_l_seg) + _blk_seg):
             warns.append(
@@ -2669,7 +2777,8 @@ def validate(text, model="2.5", mode="new", track="1", combat="auto", c23="auto"
             _hd = _shot_head(_l)
             if not (_hd and re.search(r"特写", _hd[:32])):
                 continue
-            if CU_PERSON_ANCHOR_RE.search(_l) or CU_BODY_PART_RE.search(_l):
+            _vx_p_all = [p for _s_zw in seg_zw for p in (_s_zw[4] or []) if len(p) >= 2]
+            if CU_PERSON_ANCHOR_RE.search(_l) or CU_BODY_PART_RE.search(_l) or any(p in _l for p in _vx_p_all):
                 _cu_n += 1
         _cu_ratio = _cu_n / len(_cu_lines)
         _cu_min_eff = 0.20 if len(_cu_lines) > 12 else CU_RATIO_MIN
@@ -2953,6 +3062,8 @@ def validate(text, model="2.5", mode="new", track="1", combat="auto", c23="auto"
             if "画面主体" in _fs_pic:
                 continue
             _fs_hd = _shot_head(_fs_pic)
+            if re.search(r"远景|大远景|大全景|航拍|空镜", (_fs_hd or _fs_pic[:20])):
+                continue
             if _fs_hd and _fs_hd in _fs_pic:
                 _fs_after = _fs_pic[_fs_pic.find(_fs_hd) + len(_fs_hd):].lstrip(" 。，,·	")
             else:
@@ -3035,10 +3146,10 @@ def validate(text, model="2.5", mode="new", track="1", combat="auto", c23="auto"
         # C20f 单人镜头点名画外角色名（实测拉片：写「看向陆沉 / 视线扫过沈青梧、裴岳」导致模型把被看者强行塞入画框甚至左右克隆出两个沈青梧分身！）
         _all_cast_names = [re.sub(r"^@?(?:CHR-)?", "", p) for _, _, _, _, _zwp, _, _ in seg_zw for p in (_zwp or [])]
         _all_cast_names = sorted(set(n for n in _all_cast_names if len(n) >= 2))
-        _gaze_other = bool(re.search(r"(?:看向|望向|扫过|瞥向|盯住|盯着|凝视|直视|对视)[^。；]{0,18}?(?:@[A-Za-z\u4e00-\u9fff]|长老|师姐|师弟|师兄)", pic))
+        _gaze_other = bool(re.search(r"(?:看向|望向|扫过|瞥向|盯住|盯着|凝视|直视|对视)[^，。；]{0,18}?(?:@[A-Za-z\u4e00-\u9fff]|长老|师姐|师弟|师兄)", pic))
         if not _gaze_other and _all_cast_names:
             for _cn in _all_cast_names:
-                if re.search(rf"(?:看向|望向|扫过|瞥向|盯住|盯着|凝视|直视|对视)[^。；]{{0,14}}{re.escape(_cn)}", pic):
+                if re.search(rf"(?:看向|望向|扫过|瞥向|盯住|盯着|凝视|直视|对视)[^，。；]{{0,14}}{re.escape(_cn)}", pic):
                     _gaze_other = True
                     break
         if _gaze_other and re.search(r"特写|近景|中近景|中景", _shot_head(pic) or pic[:24]):
@@ -3156,7 +3267,7 @@ def validate(text, model="2.5", mode="new", track="1", combat="auto", c23="auto"
     # 病根：short-drama-camera-system.md §二 写死「每个镜头必须标注焦段」并给了景别→焦段逐级表，
     #   但总控 §5 的镜行范式长期只有「景别·角度·运镜」三项 → 照模板写必然漏焦段，
     #   模型只能自选镜头（实测「特写」被拍成 1:1 微距、「正脸大特写」裁掉半张脸）。
-    for ln_i, h in _cam_heads:
+    for ln_i, h in ([] if _is_video_x_format else _cam_heads):
         if h and not re.search(r"\d{2,3}\s*mm|微距|鱼眼|变焦", h):
             warns.append(f"C33 第{ln_i}行 镜行未标注焦段：镜行头「{h.strip()}」内无焦段——"
                          "§二「每个镜头必须标注焦段」，并给「景别→焦段逐级对照表」"
@@ -3339,6 +3450,8 @@ def validate(text, model="2.5", mode="new", track="1", combat="auto", c23="auto"
             # C22c 镜内速度四拍逐镜缺拍（★逐镜判定，非全片总数——见 §2.2）
             _miss4 = {}
             for _s, _e, _ln, pic in _ranges:
+                if (_e - _s) < 1.5:
+                    continue  # ★V7.5.0：0.3s~1.4s 亚秒/短促冲击微镜头只承载单一瞬间节拍，不强塞四拍
                 clean = _strip_struct_annot(pic)
                 for beat, rx in COMBAT_BEAT_RE.items():
                     if not rx.search(clean):
@@ -3386,8 +3499,14 @@ def validate(text, model="2.5", mode="new", track="1", combat="auto", c23="auto"
     # 四条 WARN 级机械判定：世界锚缺失 / 年代锚与正文冲突 / 人物年龄锚缺失 / 人物身份外观缺失。
     # 只看「声明层」与「正文层」的年代物证，不判设定对错（那是 P2 语义门）。
     _c26_meta_s = "\n".join(m.group(1) for m in re.finditer(r"【画幅风格】(.*?)(?=【场景资产】|\n【|\Z)", text, re.S))
-    _c26_scn_s = "\n".join(m.group(1) for m in re.finditer(r"【场景资产】(.*?)(?=【核心人物】|【站位声明】|【时间轴分镜】|\n【|\Z)", text, re.S))
-    _c26_cast_s = "\n".join(m.group(1) for m in re.finditer(r"【核心人物】(.*?)(?=【站位声明】|【时间轴分镜】|\n【|\Z)", text, re.S))
+    _c26_scn_s = "\n".join(
+        [m.group(1) for m in re.finditer(r"【场景资产】(.*?)(?=【核心人物】|【站位声明】|【时间轴分镜】|\n【|\Z)", text, re.S)]
+        + [m.group(1) for m in re.finditer(r"场景描述\s*[：:]([^\n]+)", text)]
+    )
+    _c26_cast_s = "\n".join(
+        [m.group(1) for m in re.finditer(r"【核心人物】(.*?)(?=【站位声明】|【时间轴分镜】|\n【|\Z)", text, re.S)]
+        + ([] if _is_video_x_format else [])
+    )
     _c26_body = text
     # C26a 世界锚缺失：画幅风格 + 场景资产两处都没有任何年代锚
     if not (C26_ERA_ANCHOR.search(_c26_meta_s) or C26_ERA_ANCHOR.search(_c26_scn_s)):
@@ -3491,7 +3610,7 @@ def validate(text, model="2.5", mode="new", track="1", combat="auto", c23="auto"
     # ★审计补丁P1：段末定格是**跨段**判据（要知谁接谁）。--by-segment 逐段跑时每段都是独立单元，
     #   无从判断"末段"，旧行为会对每个单元都报「缺定格」（实测 4 段稿连报 2 条假告警）。
     #   故逐段模式下整段跳过，改由 --whole 整份校验时判。
-    for (_n, _b, _l, _blk, _ppl, _shots, _dlgs) in ([] if globals().get("_BY_SEG") else seg_zw):
+    for (_n, _b, _l, _blk, _ppl, _shots, _dlgs) in ([] if (globals().get("_BY_SEG") or _is_video_x_format) else seg_zw):
         if not _shots:
             continue
         _last = _shots[-1][1]
@@ -5362,6 +5481,40 @@ def _self_test():
     if not re.search(_zf_pat, "滑动变焦（Dolly Zoom）"):
         print("FAIL self-test: 滑动变焦/Dolly Zoom 应命中滑动变焦名额正则"); ok = 0
 
+    # 75) V7.5.0 【视频 X】唯一标准格式双向回归测试（正例 0 FAIL/0 WARN + 反例拦截伪参数/等长切片/台词超限）
+    _vx_good = (
+        "【视频 1】\n"
+        "场景描述：明朝寒冬傍晚的断魂崖古宗门废墟（图3），残破青石牌坊矗立绝壁边缘，铅灰阴云下夕阳冷金侧逆光斜切雪地，山风卷起碎雪与枯叶，肃杀苍凉氛围。\n"
+        "角色：沈青棠（图1），陆沉（图2）\n"
+        "道具：寒霜古剑（图4）\n"
+        "风格要求：冷峻凌厉电影级武侠质感，冷暖撞色光影\n"
+        "【00:00-00:03.5 秒】：远景，航拍大俯拍接高速下降推进，断魂崖青石牌坊在碎雪山风中耸立，沈青棠与陆沉隔着十步雪地对峙，环境音效：凛冽山风呼啸。\n"
+        "【00:03.5-00:06.0 秒】：中近景，侧45度越肩移焦，焦点从前景带鞘寒霜古剑移至沈青棠冷冽眉眼，沈青棠右手拇指顶开剑格半寸，身后残碑积雪滑落，沈青棠说：“剑还我。”，动作音效：金属剑格轻响。\n"
+        "【00:06.0-00:08.0 秒】：近景，低角度略仰缓推，陆沉左手按住腰间刀柄指节发白，嘴角向下绷紧，身后绝壁枯松摇晃，陆沉内心独白：她竟追到了断魂崖（内心独白无口型，是画外音，嘴部无任何开口动作），环境音效：枯枝震颤声。\n"
+        "【00:08.0-00:08.5 秒】：大特写，急速变焦疾推，沈青棠右脚猛蹬积雪青石板，碎雪炸开瞬间拔剑出鞘寒光一闪，动作音效：清越剑鸣与踏雪爆响。\n"
+        "【00:08.5-00:09.2 秒】：特写，手持微晃跟拍，寒霜剑锋劈在陆沉横架的刀背上迸出刺目火星，气浪掀飞两人鬓发与身后碎雪，动作音效：金铁交鸣巨响。\n"
+        "【00:09.2-00:12.0 秒】：中全景，360°子弹时间环绕接升降格变速，陆沉借反震力向后滑退三步犁开雪地，旋即拧胯转腰横刀反扫；沈青棠仰身铁板桥避开刀锋并旋身斜撩，动作音效：鞋底犁雪声与破空刀风。\n"
+        "【00:12.0-00:15.0 秒】：全景，希区柯克变焦缓拉，沈青棠持剑立于牌坊残柱前，陆沉单膝点地横刀稳住重心，漫天风雪掠过断崖残碑，环境音效：余音剑鸣与寒风声。\n"
+    )
+    _vx_i, _vx_w, _ = validate(_vx_good, "2.0", "new", combat="off")
+    if _vx_i or _vx_w:
+        print("FAIL self-test: V7.5.0 合规【视频 1】稿应 0 FAIL 0 WARN", _vx_i, _vx_w); ok = 0
+    _vx_bad = (
+        "【视频 1】\n"
+        "场景描述：古殿。\n"
+        "角色：沈青棠（图1）\n"
+        "风格要求：UE5次世代渲染，PBR物理材质，光比 [1:4, 1:8]\n"
+        "【0-2 秒】：中景，固定，沈青棠说：“今天我要把当年所有的账全部算个清清楚楚明明白白！”\n"
+        "【2-4 秒】：近景，固定，沈青棠内心独白：无尾注独白\n"
+        "【4-6 秒】：特写，固定，沈青棠转头。\n"
+    )
+    _vx_bi, _, _ = validate(_vx_bad, "2.0", "new", combat="off")
+    for _phrase_need in ("伪技术参数/旧画风块污染", "机械等长切片违规", "对白超字数硬上限", "内心独白缺少标准闭口声明"):
+        if not any(_phrase_need in x for x in _vx_bi):
+            print(f"FAIL self-test: V7.5.0 反例应触发 {_phrase_need}，实得 {_vx_bi}"); ok = 0
+    if _looks_like_feed("【视频 X】\n场景描述：[完整详细的环境描述]\n"):
+        print("FAIL self-test: 含占位符【视频 X】且无真实时码的规则文档不应判为投喂稿"); ok = 0
+
     print("[+] self-test", "PASSED" if ok else "FAILED")
     return ok
 
@@ -5385,6 +5538,8 @@ def _looks_like_feed(text):
        storyboard-example.md / demo-feed-wkw-15s.md / demo-feed-xuke-15s.md
        **全部正确判为稿件，零漏杀**。
     """
+    if VX_REAL_SEG_RE.search(text) and re.search(r"场景描述\s*[：:]", text) and TIME_RE.search(text):
+        return True
     if TIME_RE.search(text) and SHOT_TAG_RE.search(text):
         return True
     if sum(1 for s in SEVEN_SEGMENTS if s in text) >= 6:
@@ -5417,6 +5572,8 @@ def _segment_is_feed(body):
     """
     if not _looks_like_feed(body):
         return False
+    if re.search(r"【视频\s*[0-9一二三四五六七八九十X]+】", body) or re.search(r"场景描述\s*[：:]", body):
+        return True
     return sum(1 for column in FEED_COLUMNS_7 if column in body) >= 4
 
 
@@ -5434,11 +5591,20 @@ def _split_feed_segments(text):
     if len(marks) < 2:
         marks = [(m.start(), m.group(1)) for m in SEG_BRACKET_RE.finditer(text)]
     if len(marks) < 2:
+        marks = [(m.start(), m.group(1)) for m in VX_REAL_SEG_RE.finditer(text)]
+    if len(marks) < 2:
         return []
     segs = []
     for index, (pos, number) in enumerate(marks):
         end = marks[index + 1][0] if index + 1 < len(marks) else len(text)
-        body = text[pos:end].strip()
+        body = text[pos:end]
+        # 若末段之后紧跟新的二级章节（如 ## P5 / ## P6 · 发布文案），在二级标题处截断，防止非分镜章节混入末段
+        first_nl = body.find("\n")
+        if first_nl > 0:
+            m_next_h2 = re.search(r"^##\s+(?![^\n]*?段\s*\d)", body[first_nl:], re.M)
+            if m_next_h2:
+                body = body[:first_nl + m_next_h2.start()]
+        body = body.strip()
         if body:
             segs.append((f"段{number}", body))
     return segs
@@ -5452,7 +5618,7 @@ def finalize_checks(text, issues, warns, *, delivery=None, contract=False,
     #   投喂单元只该核 CT5-P4F（七段式）与 CT6-WIR（接线单），不该要求情绪锚点表/人物锚卡/故事板。
     _stage_markers = re.search(r"情绪锚点表|世界锚卡|人物锚卡|角色四格|九宫格|场面调度|连续性台账|故事板",
                                text)
-    _feed_units = text.count("【画幅风格】")
+    _feed_units = text.count("【画幅风格】") + len(VX_REAL_SEG_RE.findall(text))
     _is_feed_unit = (_feed_units >= 2
                      and not re.search(r"资产提示词|角色四格板|场景母版|九宫格提示词", text))
     project_doc = (bool(re.search(r"^#{1,3}\s+", text, re.M)) and len(text) > 1500

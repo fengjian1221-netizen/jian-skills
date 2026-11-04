@@ -47,8 +47,8 @@ from pathlib import Path
 # 兼容三种镜行写法：本包原生 `00:00-00:05 [镜头1] …` / `[00:00-00:05] …` / `[0-3秒] …`
 TS_RE = re.compile(
     r"^\s*(?:[\[【]?\s*镜头\s*\d+\s*[\]】]?\s*[,，]?\s*)?"
-    r"\[?\s*(\d{1,2}(?::\d{2})?(?:\.\d+)?)\s*s?\s*[-~～—→]\s*"
-    r"(\d{1,2}(?::\d{2})?(?:\.\d+)?)\s*(?:秒|s)?\s*\]?\s*[,，]?\s*(.*)$", re.I)
+    r"[\[【]?\s*(\d{1,2}(?::\d{2})?(?:\.\d+)?)\s*s?\s*[-~～—→]\s*"
+    r"(\d{1,2}(?::\d{2})?(?:\.\d+)?)\s*(?:秒|s)?\s*[\]】]?\s*[：:,，]?\s*(.*)$", re.I)
 SHOT_NO_RE = re.compile(r"^[\[【]?\s*镜头\s*\d+\s*[\]】]?\s*[,，]?\s*")
 
 
@@ -221,7 +221,7 @@ def parse_md(md_text: str) -> dict:
             section = m_sec.group(1).strip()
             seg, ap, sub_head = None, None, ""
             data["_head"] = None            # 表头映射不跨章节
-            if re.match(r"^【?投喂单元", section) or re.match(r"^段\s*\d", section):
+            if re.match(r"^【?投喂单元", section) or re.match(r"^段\s*\d", section) or re.match(r"^【?视频\s*\d", section):
                 seg = {"no": len(data["segments"]) + 1, "name": section,
                        "raw": "", "shots": [], "fields": {}, "warnings": []}
                 data["segments"].append(seg)
@@ -434,10 +434,16 @@ def parse_md(md_text: str) -> dict:
         if seg["shots"]:
             off += max(sh["end"] for sh in seg["shots"])
 
-    # 资产引用段：用编码在段原文里回查（如 @CHR-沈砚 出现在哪些段）
+    # 资产引用段：用编码或图号在段原文里回查（兼容 @CHR-沈砚 与 V7.5.0 图N 槽位）
     for a in data["assets"]:
         code = a.get("code", "")
-        a["refs"] = [seg["no"] for seg in data["segments"] if code and code in seg["raw"]]
+        img_tok = re.sub(r"^@", "", a.get("img", "")).strip()
+        m_fig = re.search(r"图\s*\d+", img_tok or code)
+        fig_pat = re.compile(re.escape(m_fig.group(0).replace(" ", "")) + r"(?!\d)") if m_fig else None
+        a["refs"] = [
+            seg["no"] for seg in data["segments"]
+            if (code and code in seg["raw"]) or (fig_pat and fig_pat.search(seg["raw"]))
+        ]
     return data
 
 
@@ -736,7 +742,7 @@ function exportSRT(){
   (D.segments||[]).forEach(seg=>{
     const off = seg.off || 0;
     (seg.shots||[]).forEach(sh=>{
-      const m = (sh.text||'').match(/台词：【([^】]+)】/);
+      const m = (sh.text||'').match(/台词：【([^】]+)】/) || (sh.text||'').match(/([^\s，。；：、“”"【（）()]{1,12}说：“[^”]+”)/);
       if(m && !m[1].startsWith('无')){
         lines.push(`${idx++}\n${fmtSrtTime(off + sh.start)} --> ${fmtSrtTime(off + sh.end)}\n${m[1]}\n`);
       }
@@ -776,7 +782,7 @@ def export_srt_text(data):
     for seg in data.get("segments", []):
         off = seg.get("off", 0)
         for sh in seg.get("shots", []):
-            m = re.search(r"台词：【([^】]+)】", sh.get("text", ""))
+            m = re.search(r"台词：【([^】]+)】", sh.get("text", "")) or re.search(r"([^\s，。；：、“”\"【（）()]{1,12}说：[“\"][^”\"]+[”\"])", sh.get("text", ""))
             if m and not m.group(1).startswith("无"):
                 lines.append(f"{idx}\n{_fmt(off + sh['start'])} --> {_fmt(off + sh['end'])}\n{m.group(1)}\n")
                 idx += 1
@@ -879,6 +885,20 @@ def self_test():
     assert ",1000" not in _srt3, f"SRT 毫秒不得进位成非法 ,1000：{_srt3!r}"
     assert "00:00:05,000" in _srt3, f"4.9995s 应结转为 00:00:05,000：{_srt3!r}"
     assert "00:00:00,000 --> 00:00:05,000" in _srt3, f"进位后起止应连续：{_srt3!r}"
+    _d_vx = parse_md(
+        "# V7.5.0 看板回归\n"
+        "## 【投喂单元 1/1 · 段1】\n"
+        "```text\n"
+        "【视频 1】\n"
+        "场景描述：古宗门断崖。\n"
+        "角色：沈青棠（图1）\n"
+        "风格要求：武侠电影质感\n"
+        "【00:00-00:03.5 秒】：远景，航拍推进，沈青棠立于崖边。\n"
+        "【00:03.5-00:06.0 秒】：近景，缓推，沈青棠说：“拔剑吧。”\n"
+        "```\n"
+    )
+    assert len(_d_vx["segments"]) == 1 and len(_d_vx["segments"][0]["shots"]) == 2
+    assert "沈青棠说：“拔剑吧。”" in export_srt_text(_d_vx)
     print("[+] build_board_lite self-test PASSED")
     return 0
 

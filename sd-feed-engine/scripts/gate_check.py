@@ -72,15 +72,32 @@ def parse_units(text):
             end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
             chunk = text[start:end]
             fm = re.search(r'```(?:text|prompt)?\s*\n(.*?)```', chunk, re.S)
-            if fm and '【画幅风格】' in fm.group(1):
+            if fm and ('【画幅风格】' in fm.group(1) or '场景描述' in fm.group(1)):
                 units.append((title, fm.group(1)))
-            elif '【画幅风格】' in chunk and '【时间轴分镜】' in chunk:
+            elif ('【画幅风格】' in chunk and '【时间轴分镜】' in chunk) or '场景描述' in chunk:
                 units.append((title, chunk.strip()))
     if not units:
-        # 兜底：直接扫描所有包含【画幅风格】与【时间轴分镜】的代码框或段落
+        # 兜底1：扫描包含【视频 N】+ 场景描述 或 【画幅风格】+【时间轴分镜】的代码框
         for idx, fm in enumerate(re.finditer(r'```(?:text|prompt)?\s*\n(.*?)```', text, re.S), 1):
-            if '【画幅风格】' in fm.group(1) and '【时间轴分镜】' in fm.group(1):
-                units.append((f'段{idx}', fm.group(1)))
+            blk = fm.group(1)
+            if ('【画幅风格】' in blk and '【时间轴分镜】' in blk) or ('场景描述' in blk and re.search(r'【\s*视频\s*[0-9一二三四五六七八九十]+\s*】', blk)):
+                units.append((f'段{idx}', blk))
+    if not units:
+        # 兜底2：纯文本直出【视频 1】…【视频 N】单元切分
+        vx_ms = list(re.finditer(r'^\s*【\s*视频\s*([0-9一二三四五六七八九十]+)\s*】', text, re.M))
+        if vx_ms:
+            body_no_wiring, _ = split_wiring(text)
+            vx_ms = list(re.finditer(r'^\s*【\s*视频\s*([0-9一二三四五六七八九十]+)\s*】', body_no_wiring, re.M))
+            for i, m in enumerate(vx_ms):
+                st = m.start()
+                ed = vx_ms[i + 1].start() if i + 1 < len(vx_ms) else len(body_no_wiring)
+                raw_chunk = body_no_wiring[st:ed]
+                tail_cut = re.search(r'^\s*(?:---\s*$|##+\s)', raw_chunk, re.M)
+                if tail_cut:
+                    raw_chunk = raw_chunk[:tail_cut.start()]
+                chunk = raw_chunk.strip()
+                if '场景描述' in chunk:
+                    units.append((f'视频{m.group(1)}', chunk))
     return units
 
 
@@ -88,7 +105,7 @@ def parse_units(text):
 GC_TIME_RE = re.compile(
     r'(\d{1,2}):(\d{2})(?:[.:](\d{1,2}))?\s*[-~～→]\s*(\d{1,2}):(\d{2})(?:[.:](\d{1,2}))?'
     r'|(\d+(?:\.\d+)?)\s*s\s*[-~～→]\s*(\d+(?:\.\d+)?)\s*s'
-    r'|(?:\A|(?<=[\s\[【\]】]))\s*([0-9]|[1-5]\d)(?:\.\d+)?\s*[-~～→]\s*([0-9]|[1-5]\d)(?:\.\d+)?秒',
+    r'|(?:\A|(?<=[\s\[【\]】]))\s*((?:[0-9]|[1-5]\d)(?:\.\d+)?)\s*[-~～→]\s*((?:[0-9]|[1-5]\d)(?:\.\d+)?)(?:秒|\s+秒\s*】)',
     re.I)
 GC_SHOT_NO_RE = re.compile(r'[\[【]?\s*镜头\s*(\d+)\s*[\]】]?')
 
@@ -111,6 +128,8 @@ def parse_shots(body):
     shots = []
     auto_no = 0
     for line in body.splitlines():
+        if line.lstrip().startswith(('|', '>', '#')):
+            continue
         tm = GC_TIME_RE.search(line)
         if not tm:
             continue
@@ -129,13 +148,14 @@ def parse_shots(body):
 
 
 def parse_lines(body):
-    """解析台词，返回 [(角色, 语气, 台词, 全行)]"""
+    """解析台词，返回 [(角色, 语气, 台词, 全行)]，兼容 V7.5.0 `角色名说：“…”` 与旧版括号语法。"""
     out = []
-    # 修正：引号定界改非贪婪 `(.*?)"】` —— 台词内嵌引号（如「先认一句"我做得够好了"」）
-    # 会把旧的 `[^"]*` 截断或整句漏检（静默失检）。新式以「"】」为唯一收尾锚点。
     pattern = r'【([^【】（(:：\n]+?)(?:[（(]([^）)\n]*)[）)])?\s*[:：]\s*["“](.*?)["”]\s*】'
     for m in re.finditer(pattern, body):
         out.append((m.group(1).strip(), (m.group(2) or '').strip(), m.group(3), m.group(0)))
+    vx_pat = r'(?<![【\w])([^\s，。；：、“”"【（）()]{1,12})说：[“"]([^”"]*)[”"]'
+    for m in re.finditer(vx_pat, body):
+        out.append((m.group(1).strip(), '自然表演', m.group(2), m.group(0)))
     return out
 
 
@@ -155,7 +175,7 @@ def split_wiring(text):
     if not m:
         return text, ''
     rest = text[m.end():]
-    nxt = re.search(r'^##\s', rest, re.M)
+    nxt = re.search(r'^(?:##\s|---\s*$|【\s*视频\s*[0-9一二三四五六七八九十]+\s*】)', rest, re.M)
     end = m.end() + nxt.start() if nxt else len(text)
     return text[:m.start()] + text[end:], text[m.start():end]
 
@@ -210,7 +230,7 @@ def check_asset_mode(text, mode_arg, fails, warns):
 
 def speech_seconds(line, tone):
     """估算台词秒数 → (最快可行, 最慢舒适, 字数, lo, hi)
-    need_fast = n/hi + pause  ← ★判定基准（V7.3.0：hi 通常 = 6 字/秒）
+    need_fast = n/hi + pause  ← ★判定基准（V7.5.0：hi 通常 = 6 字/秒）
     need_slow = n/lo + pause  ← 舒适参考
     """
     lo, hi = SPEED_DEFAULT[0], SPEED_DEFAULT[1]
@@ -264,6 +284,19 @@ def self_test():
         print('FAIL self-test: 闸门5 在 model=h3 挂 10 图应超限（上限 9），实判合规'); ok = 1
     elif img_gate_check(40, '2.5', 40)[0]:
         print('FAIL self-test: 闸门5 --img-limit 覆盖失效（40 应放行 40 图）'); ok = 1
+    vx_md = (
+        '素材形态：M1\n\n'
+        '【视频 1】\n'
+        '场景描述：夜晚山巅古殿（图2）。\n'
+        '角色：沈青棠（图1）\n'
+        '风格要求：冷峻武侠电影感\n'
+        '【0-3.5 秒】：远景，航拍俯推，沈青棠立于殿前。\n'
+        '【3.5-5.5 秒】：近景，缓推，沈青棠说：“跟紧我。”\n\n'
+        '## 素材接线单\n| 图号 | 资产 | 只控制什么 | 不控制什么 |\n|---|---|---|---|\n| 图1 | 沈青棠 | 外貌 | 不控制动作 |\n| 图2 | 古殿 | 空间 | 不控制站位 |\n'
+    )
+    vx_u = parse_units(vx_md)
+    if len(vx_u) != 1 or len(parse_shots(vx_u[0][1])) != 2 or len(parse_lines(vx_u[0][1])) != 1:
+        print(f'FAIL self-test: 【视频 1】单元/镜行/对白解析失败: units={len(vx_u)}'); ok = 1
     if not ok:
         print('[+] gate_check self-test PASSED')
     return ok
@@ -278,10 +311,10 @@ def main():
                     help='闸门5 单组图片上限手动覆盖（0=按 --model 分档：2.5→30 / 2.0→9 / h3→9）。'
                          '2026-10-17 新增：原实现写死 9，不读模型')
     ap.add_argument('--mode', default='auto', choices=['auto', 'M0', 'M1', 'M2', 'm0', 'm1', 'm2'],
-                    help='素材形态（V7.3.0）：auto=按交付稿首行「素材形态：Mx」声明判定，'
+                    help='素材形态（V7.5.0）：auto=按交付稿首行「素材形态：Mx」声明判定，'
                          '未声明时按默认 M1 并告警。权威 = references/asset-delivery-modes.md')
     ap.add_argument('--tol', type=float, default=0.8,
-                    help='闸门2 判定容差(s)：V7.3.0 以最快档 6 字/秒为判定基准，'
+                    help='闸门2 判定容差(s)：V7.5.0 以最快档 6 字/秒为判定基准，'
                          '仅当「字数÷6 + 停顿 > 镜长 + tol」才判真念不完。默认 0.8')
     ap.add_argument('--self-test', action='store_true')
     a = ap.parse_args()
@@ -302,8 +335,8 @@ def main():
     warns, fails, infos = [], [], []
     mode = check_asset_mode(text, a.mode, fails, warns)
 
-    print(f'投喂单元：{len(units)} 段  |  闸门2 判定基准：最快档 6 字/秒（V7.3.0）'
-          f'  |  素材形态：{mode}（闸门6B · V7.3.0）\n')
+    print(f'投喂单元：{len(units)} 段  |  闸门2 判定基准：最快档 6 字/秒（V7.5.0）'
+          f'  |  素材形态：{mode}（闸门6B · V7.5.0）\n')
 
     # ---- 闸门 0 · 结构完整性自检（防字符损坏导致下游全漏检）----
     previous_no = None
@@ -321,10 +354,18 @@ def main():
                     or (previous_no is not None and nums[0] not in (1, previous_no + 1))):
                 fails.append(f'闸门0 段{ui}：镜号不连续 {nums}')
             previous_no = nums[-1]
-        # 七段式必备字段（2026-10-09：【接续状态】尾行已废止，从必备列表移除）
-        for f in ['【画幅风格】', '【场景资产】', '【核心人物】', '【站位声明】', '【时间轴分镜】']:
-            if f not in body:
-                fails.append(f'闸门0 段{ui}：缺字段 {f}')
+        # 必备字段校验：识别 V7.5.0【视频 X】标准格式 vs 旧版七段式
+        _is_vx_unit = bool(re.search(r'【\s*视频\s*[0-9一二三四五六七八九十X]+\s*】', body) or '场景描述：' in body or '场景描述:' in body)
+        if _is_vx_unit:
+            for f in ['场景描述', '角色', '风格要求']:
+                if not re.search(rf'{f}\s*[：:]', body):
+                    fails.append(f'闸门0 段{ui}：【视频 X】缺核心字段「{f}：」')
+            if re.search(r'【STYLE[｜|]|【PERFORMANCE[｜|]|UE5次世代|PBR物理材质|皮肤次表面散射|光比\s*\[1:', body, re.I):
+                fails.append(f'闸门0 段{ui}：检测到伪技术参数/旧画风块污染（V7.5.0 严禁堆砌 UE5/PBR/STYLE 块）')
+        else:
+            for f in ['【画幅风格】', '【场景资产】', '【核心人物】', '【站位声明】', '【时间轴分镜】']:
+                if f not in body:
+                    fails.append(f'闸门0 段{ui}：缺字段 {f}')
         if '【接续状态】' in body:
             fails.append(f'闸门0 段{ui}：出现已废止的【接续状态】栏（2026-10-09 废止，机检 C11 反转为残留拦截）')
 
@@ -340,9 +381,14 @@ def main():
         # 闸门1 节奏档位：10s 以上只有 1-2 镜
         if dur >= 10 and len(shots) <= 2:
             warns.append(f'闸门1 段{ui}：{dur}s 只有 {len(shots)} 镜，需慢节奏白名单或补标点镜')
-        # 闸门1b 镜长分布
+        # 闸门1b 镜长分布与禁止连续3镜等长切片
         if shots:
-            lens = [e - s for _, s, e, _ in shots]
+            lens = [round(e - s, 2) for _, s, e, _ in shots]
+            if len(lens) >= 3 and ('场景描述：' in body or '场景描述:' in body):
+                for _ki in range(len(lens) - 2):
+                    if lens[_ki] == lens[_ki + 1] == lens[_ki + 2]:
+                        fails.append(f'闸门1 段{ui}：连续 3 镜时长均为 {lens[_ki]}s（V7.5.0 严禁连续 3 个以上相同秒数机械切片）')
+                        break
             if len(lens) >= 4:
                 from collections import Counter
                 top = Counter(lens).most_common(1)[0]
@@ -398,10 +444,15 @@ def main():
             infos.append(f'闸门5 段{ui}：单段引用 {len(figs)} 个图号（2.5 上限 {img_lim}，合规）'
                          f'——超过 9 张时请确认每张都有明确职责，多余图位会稀释一致性')
 
-        # 闸门6A 编号一致性（图号是否在资产库范围内）
-        oob = [f for f in figs if f > a.assets]
+        # 闸门6A 编号一致性（图号是否在资产库范围内；若文档内含《素材接线单》或 `#### 图N` 定义块且未显式缩窄 --assets，自动对齐最大图号）
+        _doc_defined_figs = [int(x) for x in re.findall(r'####\s*图(\d+)', text)]
+        _, _w_txt = split_wiring(text)
+        if _w_txt:
+            _doc_defined_figs.extend(int(x) for x in re.findall(r'图(\d+)', _w_txt))
+        _eff_assets = max([a.assets] + _doc_defined_figs) if ('--assets' not in sys.argv and _doc_defined_figs) else a.assets
+        oob = [f for f in figs if f > _eff_assets]
         if oob:
-            fails.append(f'闸门6A 段{ui}：引用图号 {oob} 超出资产库（共 {a.assets} 图）')
+            fails.append(f'闸门6A 段{ui}：引用图号 {oob} 超出资产库（共 {_eff_assets} 图）')
 
     print()
     print('=== 结果 ===')

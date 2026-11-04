@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-sd_core.py · 漫剧老李 V7.4.26 套装唯一公共解析内核与跨阶段状态台账引擎
+sd_core.py · 漫剧老李 V7.5.0 套装唯一公共解析内核与跨阶段状态台账引擎
 定位：
   1. 终结「多脚本各自写正则导致修A漏B」——统一提供 TIME_RE、SHOT_TAG_RE、模型时长与字数契约、
      镜行解析 parse_shots()、时间轴解析 parse_time_ranges()、镜行头提取 extract_shot_head()。
@@ -31,10 +31,12 @@ SEVEN_SEGMENTS = (
 )
 
 # ---- 唯一权威时间码与镜号正则（兼容 MM:SS(.ff) / Xs-Ys / N-N秒 守卫版 + 全半角镜号）----
+VIDEO_X_FIELDS = ("场景描述", "角色", "道具", "风格要求")
+
 TIME_RE = re.compile(
     r"(\d{1,2}):(\d{2})(?:[.:](\d{1,2}))?\s*[-~～→]\s*(\d{1,2}):(\d{2})(?:[.:](\d{1,2}))?"
     r"|(\d+(?:\.\d+)?)\s*s\s*[-~～→]\s*(\d+(?:\.\d+)?)\s*s"
-    r"|(?:\A|(?<=[\s\[【\]】]))\s*([0-9]|[1-5]\d)(?:\.\d+)?\s*[-~～→]\s*([0-9]|[1-5]\d)(?:\.\d+)?秒",
+    r"|(?:\A|(?<=[\s\[【\]】]))\s*((?:[0-9]|[1-5]\d)(?:\.\d+)?)\s*[-~～→]\s*((?:[0-9]|[1-5]\d)(?:\.\d+)?)(?:秒|\s+秒\s*】)",
     re.I,
 )
 SHOT_TAG_RE = re.compile(r"[\[【]?\s*镜头\s*(\d+)\s*[\]】]?")
@@ -95,7 +97,7 @@ def parse_shots(body):
 def default_project_state():
     """生成标准 project_state.json 模板结构（覆盖 P0~P5 跨阶段核心锁定项）。"""
     return {
-        "schema_version": "7.4.23",
+        "schema_version": "7.5.0",
         "project_name": "示例短剧项目",
         "locks": {
             "track": "1",
@@ -203,29 +205,82 @@ def default_project_state():
                 "shots": [
                     {
                         "no": 1,
-                        "start": 0,
-                        "end": 4,
-                        "spec": "中近景 · 侧45度 · 极缓慢推",
-                        "action": "画面主体：@林风 右手拇指攥紧战术手套魔术贴，听到名字瞬间手指骤停、下颌咬肌绷紧，目光死死钉在 @陈枭 脸上；@陈枭 摘下金丝半框眼镜捏在指间，鼻梁留有浅红压痕",
-                        "sound": "[SFX: 皮质摩擦声与低沉电流嗡鸣]",
-                        "dialogue": '【林风（压着怒意·低沉微哑·语速偏慢）：“陈会长，这表你认得吧？”】',
-                    },
-                    {
-                        "no": 2,
-                        "start": 4,
-                        "end": 9,
-                        "spec": "中景 · 正侧 · 跟移",
-                        "action": "@林风 沉腰屈膝，右脚猛然蹬地、拧胯转腰送肩轰出重拳；@陈枭 瞳孔骤缩，双臂交叉架臂格挡卸力，小臂西装布料受击凹陷，整个人向后滑退半步碾开地面浅水洼，命中瞬间画面顿住2帧后稳住重心",
-                        "sound": "[SFX: 拳肉沉闷撞击声，鞋底擦地滑水声]",
+                        "start": 0.0,
+                        "end": 3.5,
+                        "spec": "远景，低角度贴地缓推",
+                        "action": "地下拳馆斑驳混凝土长廊内顶灯冷白硬光直射地面浅水洼，林风立于水泥走廊中段面朝铁门，陈枭立于北侧铁艺双开门前，空气微尘浮动，环境音效：电流低鸣与滴水回声",
                         "dialogue": "无",
                     },
                     {
+                        "no": 2,
+                        "start": 3.5,
+                        "end": 6.0,
+                        "spec": "中近景，侧45度越肩移焦",
+                        "action": "焦点从前景旧怀表移至林风冷峻面庞，林风右手拇指骤停攥紧战术手套魔术贴、下颌咬肌绷紧，身后混凝土墙面明装铁管阴影冷硬，动作音效：皮质手套攥紧摩擦声",
+                        "dialogue": "林风说：“这表你认得？”",
+                    },
+                    {
                         "no": 3,
-                        "start": 9,
-                        "end": 14,
-                        "spec": "全景 · 略仰 · 缓慢拉远",
-                        "action": "@林风 收拳沉肩稳住重心立于画面左，@陈枭 垂臂立于铁门前呼吸微促，两人隔着水泥走廊对峙",
-                        "sound": "[SFX: 粗重呼吸声与走廊回音]",
+                        "start": 6.0,
+                        "end": 9.5,
+                        "spec": "近景，略仰固定",
+                        "action": "陈枭慢条斯理摘下金丝半框眼镜捏在指间，鼻梁两侧留有浅红压痕，镜片后眼睑骤然眯紧，身后铁艺双开门冷光勾出肩廓，动作音效：金属镜腿轻响",
+                        "dialogue": "陈枭说：“留着给你陪葬。”",
+                    },
+                    {
+                        "no": 4,
+                        "start": 9.5,
+                        "end": 11.5,
+                        "spec": "中景，贴地极速跟推",
+                        "action": "林风沉腰屈膝，右脚猛然蹬地碾碎浅水洼，水花四溅间拧胯转腰送肩如离弦般贴地疾冲逼近陈枭，身后水泥墙面高速后掠，动作音效：鞋底炸水与破风呼啸",
+                        "dialogue": "无",
+                    },
+                    {
+                        "no": 5,
+                        "start": 11.5,
+                        "end": 12.0,
+                        "spec": "大特写，急速变焦疾推",
+                        "action": "林风右拳裹挟水珠轰在陈枭交叉格挡的小臂上，西装布料瞬间塌陷变形、震开一圈细密水雾，顶灯冷光切过拳面，动作音效：沉闷骨肉重击爆响",
+                        "dialogue": "无",
+                    },
+                    {
+                        "no": 6,
+                        "start": 12.0,
+                        "end": 12.7,
+                        "spec": "特写，手持微晃侧拍",
+                        "action": "陈枭瞳孔骤缩、牙关咬紧腮肉微颤，格挡双臂受巨力压迫向内沉陷半寸，背后铁门门环震颤，动作音效：短促闷哼与铁环嗡鸣",
+                        "dialogue": "无",
+                    },
+                    {
+                        "no": 7,
+                        "start": 12.7,
+                        "end": 15.5,
+                        "spec": "中全景，30度斜侧弧形环绕跟拍",
+                        "action": "陈枭借格挡卸力向后滑退半步，皮鞋底在湿水泥地面犁出两道水痕，旋即拧身甩出左摆拳反击；林风潜避偏头闪过拳锋并顺势扣住陈枭手腕，动作音效：皮鞋擦地滑水声与拳风擦耳声",
+                        "dialogue": "无",
+                    },
+                    {
+                        "no": 8,
+                        "start": 15.5,
+                        "end": 19.5,
+                        "spec": "中景，升降格变速接低仰跟移",
+                        "action": "林风拧身催肘顶向陈枭胸口，命中瞬间顿帧微停，陈枭弓身闷响撞在身后铁艺双开门上，铁门剧烈震颤落灰，林风顺势欺身左臂横抵其咽喉下方锁骨处，动作音效：铁门轰鸣与急促喘息",
+                        "dialogue": "无",
+                    },
+                    {
+                        "no": 9,
+                        "start": 19.5,
+                        "end": 23.5,
+                        "spec": "近景，希区柯克变焦缓推",
+                        "action": "林风左手亮出暗黄黄铜旧怀表停在陈枭眼前半尺处，表壳细密划痕清晰可见，林风目光冷硬逼视前方，背景长廊空间透视拉伸，动作音效：怀表链轻晃叮当声",
+                        "dialogue": "林风说：“说出妹妹下落！”",
+                    },
+                    {
+                        "no": 10,
+                        "start": 23.5,
+                        "end": 30.0,
+                        "spec": "全景，略俯缓慢拉远",
+                        "action": "顶灯冷白光束笼罩湿冷水泥长廊，林风持表抵住背靠铁门的陈枭，两人胸口起伏对峙，地面水洼倒映冷硬人影，环境音效：空旷地下走廊回音与水滴声",
                         "dialogue": "无",
                     },
                 ],
@@ -262,8 +317,9 @@ def verify_feed_against_state(feed_text, state):
     for cname, cinfo in state.get("characters", {}).items():
         if cname not in feed_text:
             continue
+        _is_vx_feed = ("场景描述：" in feed_text or "场景描述:" in feed_text)
         vlock = cinfo.get("voice_lock", "")
-        if vlock and vlock not in feed_text:
+        if vlock and vlock not in feed_text and not _is_vx_feed:
             warns.append(f"STATE-5 角色「{cname}」的 P3《角色表演档案》Voice 声线锁（「{vlock}」）未落入投喂稿【核心人物】")
         age = cinfo.get("age_anchor", "")
         # M1/M2 全能参考有图模式下，【核心人物】严禁二次复述年龄与外貌，仅 M0 无图模式检查 P4 年龄锚
@@ -280,7 +336,7 @@ def verify_feed_against_state(feed_text, state):
         combo = seg.get("camera_combo_80", "")
         if combo:
             # 检查核心景别或角度词是否落在镜行中
-            parts = [p.strip() for p in combo.split("·") if p.strip()]
+            parts = [p.strip() for p in re.split(r"[·，,]", combo) if p.strip()]
             if parts and not all(p in feed_text for p in parts):
                 warns.append(f"STATE-8 [{sid}] P0B《情绪锚点表》锁定的 80% 核心机位组合「{combo}」未在镜行中完整体现")
         panels = seg.get("storyboard_panels", [])
@@ -310,12 +366,14 @@ def self_test():
     assert len(parse_shots("【镜头1】 0-3秒，中景\n【镜头2】 3-6秒，近景")) == 2
     iss, wrn = verify_feed_against_state("素材形态：M1\n16:9\n2026年现代都市\n00:00-00:04 [镜头1] 中近景 · 侧45度", st)
     assert not iss
+    assert parse_time_ranges("【0-3.5 秒】：远景")[0][:2] == (0.0, 3.5)
+    assert parse_time_ranges("【11.5-12.0 秒】：大特写")[0][:2] == (11.5, 12.0)
     print("[+] sd_core self-test PASSED")
     return 0
 
 
 def main():
-    ap = argparse.ArgumentParser(description="漫剧老李 V7.4.26 公共解析内核与状态台账工具")
+    ap = argparse.ArgumentParser(description="漫剧老李 V7.5.0 公共解析内核与状态台账工具")
     ap.add_argument("--self-test", action="store_true")
     ap.add_argument("--init-state", metavar="JSON_PATH", help="生成标准 project_state.json 模板")
     args = ap.parse_args()

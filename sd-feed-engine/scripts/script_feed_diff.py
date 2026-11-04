@@ -32,8 +32,14 @@ def parse_script(path, names):
             seg = m.group(1)
             # 修正：引号改贪婪 `(.*)"` —— 分镜稿每行仅一句台词；
             # 旧的 `[^"]+` 会被台词内嵌引号（「先认一句"我做得够好了"」）截断。
-            for q in re.finditer(r'(' + name_pat + r')(（[^）]*）)?：?"(.*)"', seg):
+            for q in re.finditer(r'(' + name_pat + r')(（[^）]*）)?(?:说)?[：:]?[“"](.*)[”"]', seg):
                 out.append((q.group(1), (q.group(2) or '').strip('（）'), q.group(3)))
+        if out:
+            return out
+    # V7.5.0 分镜/提示词格式：角色名说：“…”
+    for m in re.finditer(r'(' + name_pat + r')说[：:][“"]([^”"]+)[”"]', txt):
+        out.append((m.group(1), '', m.group(2).strip()))
+    if out:
         return out
     # 剧本格式：角色（提示）：台词
     for m in re.finditer(r'^(' + name_pat + r')(（[^）]*）)?：(.+)$', txt, re.M):

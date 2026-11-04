@@ -311,7 +311,7 @@ def self_test():
 
 
 def main():
-    ap = argparse.ArgumentParser(description="漫剧老李 V7.4.26 动态原文切片器")
+    ap = argparse.ArgumentParser(description="漫剧老李 V7.5.0 动态原文切片器")
     ap.add_argument("--stage", default="P3", choices=["P0", "P1", "P2", "P3", "P4", "P5", "p0", "p1", "p2", "p3", "p4", "p5"])
     ap.add_argument("--track", default="1", choices=["1", "2", "3", "4"])
     ap.add_argument("--combat", default="none", choices=["none", "R1", "R2", "R3", "r1", "r2", "r3"])

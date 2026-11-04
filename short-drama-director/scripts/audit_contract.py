@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-audit_contract.py — 漫剧老李 Short-Drama Director Suite 全流程交付契约与权威源核销器 (V7.4.26)
+audit_contract.py — 漫剧老李 Short-Drama Director Suite 全流程交付契约与权威源核销器 (V7.5.0)
 
 专治外部 Agent 三大通病（2026-10-14 实测根因封堵）：
   1. 「拿 validate_prompt.py 机检全绿当任务完成」——只写 P4 投喂稿，漏掉 P0B 情绪锚点表、P1 表演档案/世界锚/人物锚、P3 场面调度/故事板图、P5 连续性台账/素材接线单；
@@ -257,11 +257,12 @@ def audit_markdown(text, mode="auto", director=None, delivery=None):
                 "（权威见 sd-storyboard-engine/references/storyboard-sheet-template.md）"
             )
 
-    # 5. CT5: P4 Feed blocks & segment boundary table
-    if "【时间轴分镜】" in text and "【站位声明】" in text:
-        passed.append("CT5-P4F P4 七段式投喂提示词主体在位")
+    # 5. CT5: P4 Feed blocks & segment boundary table（支持 V7.5.0【视频 X】标准格式与旧版兼容夹具）
+    _has_vx_p4 = bool(re.search(r"【\s*视频\s*[0-9一二三四五六七八九十X]+\s*】", text) and re.search(r"场景描述\s*[：:]", text))
+    if _has_vx_p4 or ("【时间轴分镜】" in text and "【站位声明】" in text):
+        passed.append("CT5-P4F P4【视频 X】标准投喂提示词主体在位")
     else:
-        issues.append("CT5-P4F 缺失 P4 七段式投喂提示词主体")
+        issues.append("CT5-P4F 缺失 P4【视频 X】标准投喂提示词主体（须含【视频 X】+ 场景描述：+ 角色：+ 【x-x 秒】：）")
 
     # 5b. CT5-P45 预演故事板（★审计补丁P1 新增 · 治「规则写了但没有任何门，永远不出」）
     #   旧态：P4.5 在 SKILL.md 里被定义为「可选附加件 · 默认不附」，契约 14 项里没有它，
@@ -272,8 +273,12 @@ def audit_markdown(text, mode="auto", director=None, delivery=None):
         _ns45 = set(re.findall(r"@([^\s@（）()【】，、；;：:]+)", _blk45))
         if len(_ns45) >= 3:
             _p45_names.add(frozenset(_ns45))
+    for _rblk45 in re.findall(r"^\s*角色\s*[：:]([^\n]+)", text, re.M):
+        _rns45 = [x.strip() for x in re.split(r"[，,、；;]", _rblk45) if x.strip() and x.strip() != "无"]
+        if len(_rns45) >= 3:
+            _p45_names.add(frozenset(_rns45))
     _p45_scns = set(re.findall(r"@//scn/\s*-\s*([^（(；;\n]+)", text))
-    _p45_crossseg = text.count("【画幅风格】")
+    _p45_crossseg = text.count("【画幅风格】") + len(re.findall(r"^\s*【\s*视频\s*[0-9一二三四五六七八九十]+\s*】", text, re.M))
     _p45_hit = []
     if _p45_names:
         _p45_hit.append("单段≥3 人同框")
@@ -389,7 +394,8 @@ def main():
 
     # ★审计补丁P1：CLI 自动识别「投喂单元」，否则一份纯投喂稿会被按项目交付包核销、
     #   一次误报 9 项（情绪锚点表/人物锚卡/调度/故事板/台账），与 validate_prompt 口径不一致。
-    if args.delivery is None and (txt.count("【画幅风格】") >= 2) and not re.search(
+    _vx_cnt = len(re.findall(r"^\s*【\s*视频\s*[0-9一二三四五六七八九十]+\s*】", txt, re.M))
+    if args.delivery is None and ((txt.count("【画幅风格】") + _vx_cnt) >= 2) and not re.search(
             r"资产提示词|角色四格板|场景母版|九宫格提示词", txt):
         args.delivery = "feed-only"
         print("[i] 识别为「投喂单元」（≥2 组七段式、无资产模板段）→ 按 feed-only 核销（只核 CT5-/CT6-WIR）；"
