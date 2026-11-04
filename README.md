@@ -17,7 +17,7 @@
 ![QC](https://img.shields.io/badge/机检-C1~C32%20%7C%20H1~H12-ff6b6b)
 ![Platform](https://img.shields.io/badge/平台-OpenClaw%20%7C%20Coze%20%7C%20Dify%20%7C%20WorkBuddy-ff9f43)
 ![License](https://img.shields.io/badge/License-MIT-ffca3a)
-![Stars](https://img.shields.io/github/stars/lixiaoxiao9888-create/manju-laoli-skill?style=social)
+![Stars](https://img.shields.io/github/stars/fengjian1221-netizen/jian-skills?style=social)
 
 ---
 
@@ -31,29 +31,31 @@
 
 ---
 
-## 🏆 赞助商
+## ⚡ V7.5.0 全新工业标准升级（核心看点）
 
-感谢以下赞助商对本项目的支持：
+针对 AI 短剧/漫剧视频生成过程中的指令冲突、伪技术参数污染、机械呆板切片、缺乏视听呼吸感等核心痛点，V7.5.0 进行了全链路工业级升级重构：
 
-| LOGO | 类型 | 赞助商名称 | 说明 | 网站 |
-| --- | --- | --- | --- | --- |
-| <img src="assets/omniboard.jpg" alt="OmniBoard" width="160"> | 企业 | OmniBoard | 字字动画旗下专业漫剧创作画布工具，从剧本到发行变现全链路一站式，新手可用 H3 模型五分钱一秒 | [omniboard.tv/register?ref=GITHUBADD7DZ](https://omniboard.tv/register?ref=GITHUBADD7DZ) |
-| <img src="assets/himadrama.png" alt="浮瑞万相AI" width="160"> | 企业 | 浮瑞万相AI | 浮瑞万相AI旗下喜马抓马 AI 视听全链路综合服务平台，HimaStudio 多模态 AI 视听创作平台及线上 OPC 社区 · 深度适配漫剧老李 Skill | [himadrama.com](https://www.himadrama.com) |
-| <img src="assets/dianzhong.png" alt="点众" width="160"> | 企业 | 点众 | 开放全 IP 库，超创与公司自制权限相同，可看到典藏版、爆款剧、精品剧的 IP | [点众开放 IP 库](https://vcnti1p0lovd.feishu.cn/wiki/VDIowZgiOiymKCkc1vnc7MjTnYe) |
-| *（LOGO 占位）* | — | 虚位以待 | 赞助位开放中——让你的产品出现在众多 AI 短剧创作者面前 | [联系我们](mailto:lixiaoxiao9888@gmail.com) |
-
-> 💡 **招商说明**：赞助位对模型渠道、算力平台、API 服务商及创作团队开放。
-> 合作请联系：邮箱 `lixiaoxiao9888@gmail.com` · 微信 `lisenlin998`
-
-### 🎬 分镜引擎专项赞助用户
-
-感谢以下用户赞助分镜引擎的开发（开放中）：
-
-*你的头像将出现在这里。*
-
-| 赞助用户 | 联系方式 |
-| --- | --- |
-| 汤圆（用老李 skills 出剧 · 包算力 · 包发行） | 微信：fush989 |
+1. **【视频 X】双轨唯一标准交付架构**：
+   - 彻底废止旧七段式冗长废参，统一采用极简高密【视频 X】交付架构：
+     `场景描述` + `角色（姓名+图号）` + `道具` + `风格要求` + `【x-x 秒】：物理可见动作与大师运镜`。
+   - **Seedance 2.5**：单片段**严格锁定 30 秒**，单段弹性分配 **10~12 个镜头**（除终局收尾段外严禁擅自降级为 15 秒）。
+   - **Seedance 2.0**：单片段**严格锁定 15 秒**，单段弹性分配 **5~6 个镜头**。
+2. **彻底清零“伪技术参数”注意力抢占**：
+   - 全面剔除 `UE5次世代渲染`、`PBR物理材质`、`皮肤次表面散射`、`骨相7.5~8头身`、`光比 [1:4, 1:8]`、`帧率 [24fps, 120fps]` 等 500 字空洞伪参数。
+   - 模型的上下文注意力 100% 留给物理可见动作、景别变化、大师级运镜与戏剧冲突。
+3. **视听呼吸感与亚秒级极限快切**：
+   - **禁止机械等长切片**：严禁连续出现 3 个以上相同秒数的镜头（禁止机械 3s+3s+3s），长镜（3.5s~5s 空间/情绪）与短镜（1.5s~2.5s 动作/对白）交错对冲。
+   - **亚秒级极限快切（Micro-Shots）**：高燃战斗场景全面引入 **0.3s ~ 0.8s 亚秒冲击帧**（交击碰撞 0.3s~0.5s、瞳孔/受击反应 0.5s~0.8s、蹬地变线 0.5s~0.8s）。
+4. **规范引入七大电影级高级运镜**：
+   - **希区柯克变焦（Dolly Zoom）、360°子弹时间（Bullet Time）、滚轴翻转（Barrel Roll）、贴地极速跟推（Whip Tracking）、移焦（Rack Focus）、穿越穿梭（Fly-Through）、升降格变速（Speed Ramping）**。
+5. **台词字数阶梯与独白语法硬约束**：
+   - 2 秒镜头：对白 ≤6 字（独白 ≤8 字）｜ 3 秒镜头：对白 ≤9 字（独白 ≤12 字）｜ 4 秒镜头：对白 ≤12 字（独白 ≤16 字）。
+   - 统一对白语法为 `角色名说：“XXX”`；独白统一为 `角色名内心独白：XXX（内心独白无口型，是画外音，嘴部无任何开口动作）`。
+6. **自动化机检脚本工具链全线升级**：
+   - `validate_prompt.py`：支持 30s/15s 双轨严格时长机检、阶梯字数机检、尾部多级标题截断；
+   - `gate_check.py`：输出前六道闸门全自动机检；
+   - `build_board_lite.py`：支持标准二级章节一键编译多维离线分镜看板 HTML，并自动识别 `图N` 槽位出场段落；
+   - `check_asset_blocks.py` / `check_p45.py` / `audit_contract.py` 全线闭环。
 
 ---
 
@@ -179,7 +181,7 @@ python3 short-drama-director/scripts/build_board_lite.py <项目.md>
 ## 📦 项目结构
 
 ```
-lixiaoxiao9888-create/manju-laoli-skill/        # V7.5.0 多技能套装（164 文件）
+fengjian1221-netizen/jian-skills/              # V7.5.0 多技能套装（164 文件）
 ├── README.md                                   # 本落地页（中文 + English）
 ├── LICENSE / .gitignore
 ├── short-drama-director/                       # L0 总控（62 文件 · 50 份规则库 · 机检脚本）
@@ -205,7 +207,20 @@ lixiaoxiao9888-create/manju-laoli-skill/        # V7.5.0 多技能套装（164 �
 
 ## 📜 更新历史
 
-- **V7.5.0**（2026-10-21）— **审计补丁 P1 + P4.5 交付标配/机检**：修 9 处执行链缺陷——① P4.5 触发条件机检化（契约 **CT5-P45**：≥3 人同框 / ≥2 个 `@//scn/` 场景 / 单段跨 2 场，命中不附即 FAIL），本仓再升为**默认必出**；② 新增 P3/P4 **最小必读集**（治 12.1 万 token vs 8k 预算）；③ 七段式镜行升级**五要素**（景别・焦段・机位角度・运镜（用途标签）），资产引用升级 `@//scn/` `@//chr/` `@//prp/`（旧写法兼容）；④ **C3 升 FAIL**（段时码必须从 00:00 起）、新增 **C18g2**（缺焦段）、`--by-segment` 改默认、C11b/C18m 加 D 锁②硬切豁免、C12 版式豁免、补 9 个运镜词、C17c/C26b/C5/C29/C19c 误报修复、C31 区分项目包/投喂单元；⑤ 新增 `check_p45.py`（P450~P458）结构机检。创作口径（锁 / 七段式 / 画风 / 打戏）未动。
+- **V7.5.0 全新工业标准升级版**（2026-11-04）— **【视频 X】双轨唯一标准 · 视听呼吸感与亚秒冲击帧 · 伪技术参数全面清零**：
+  1. **【视频 X】唯一交付架构**：全链路统一为 `【视频 X】` 标准交付模板（`场景描述` + `角色（姓名+图号）` + `道具` + `风格要求` + `【x-x 秒】：物理运镜与表演`），彻底废除冗余旧七段式与段8/段9虚假参数块；
+  2. **双轨时长模型硬契约**：Seedance 2.5 严格锁定 30 秒弹性 10~12 镜头（非终局段严禁切成 15 秒）；Seedance 2.0 严格锁定 15 秒 5~6 镜头；
+  3. **彻底清零伪技术参数污染**：移除 `UE5次世代`、`PBR`、`次表面散射`、`头身比`、`光比帧率` 等空洞假词，将 100% 提示词注意力保留给真实物理动作、角色微表情与高级运镜；
+  4. **视听呼吸感铁律**：严禁连续出现 3 个镜头以上相同秒数的机械等长切片（禁止机械 3s+3s+3s），长镜头（3.5s~5s 空间/情绪）与短镜头（1.5s~2.5s 动作/对白）交错对冲呼吸；
+  5. **亚秒级极限快切（Micro-Shots）**：高燃战斗场景全面引入并规范 0.3s~0.8s 亚秒冲击帧（碰撞交击 0.3~0.5s、受击反应 0.5~0.8s、变线位移 0.5~0.8s）；
+  6. **电影级大师运镜规范化**：希区柯克变焦（Dolly Zoom）、360°子弹时间（Bullet Time）、滚轴翻转（Barrel Roll）、贴地疾推（Whip Tracking）、移焦（Rack Focus）、穿梭穿越（Fly-Through）、升降格变速（Speed Ramping）；
+  7. **台词与独白硬约束**：严格执行 2s≤6字/3s≤9字/4s≤12字阶梯限制；对白统一中文引号 `角色名说：“XXX”`；独白统一强制第一人称 `角色名内心独白：XXX（内心独白无口型，是画外音，嘴部无任何开口动作）`；
+  8. **自动化脚本工具链全线升级**：
+     - `validate_prompt.py`：升级 30s/15s 双轨严格时长机检、阶梯字数机检、尾部多级标题截断；
+     - `gate_check.py`：输出前六道交付硬闸门自动核验；
+     - `build_board_lite.py`：支持标准二级章节一键编译多维离线分镜看板 HTML，并自动关联 `图N` 槽位出场段落；
+     - `check_asset_blocks.py` / `check_p45.py` / `audit_contract.py` 全线闭环。
+- **V7.4.26**（2026-10-21）— **审计补丁 P1 + P4.5 交付标配/机检**：修 9 处执行链缺陷——① P4.5 触发条件机检化（契约 **CT5-P45**：≥3 人同框 / ≥2 个 `@//scn/` 场景 / 单段跨 2 场，命中不附即 FAIL），本仓再升为**默认必出**；② 新增 P3/P4 **最小必读集**（治 12.1 万 token vs 8k 预算）；③ 七段式镜行升级**五要素**（景别・焦段・机位角度・运镜（用途标签）），资产引用升级 `@//scn/` `@//chr/` `@//prp/`（旧写法兼容）；④ **C3 升 FAIL**（段时码必须从 00:00 起）、新增 **C18g2**（缺焦段）、`--by-segment` 改默认、C11b/C18m 加 D 锁②硬切豁免、C12 版式豁免、补 9 个运镜词、C17c/C26b/C5/C29/C19c 误报修复、C31 区分项目包/投喂单元；⑤ 新增 `check_p45.py`（P450~P458）结构机检。创作口径（锁 / 七段式 / 画风 / 打戏）未动。
 - **V7.4.25**（2026-10-19）— **交付层与门禁实战回写**：以《兽瞳》第01集全流程实跑为样本，修四类反复踩到的坑——① **交付件数失控**（单集曾产出 15 文件/10 目录）：定死「对外最多 3 件」（主文档 / 看板 / P4.5），md 正文只放资产提示词 + 分镜提示词，其余归 `_内部_` 前缀的内部档案，命名全中文；② **资产提示词结构性缺陷**：新增 `scripts/check_asset_blocks.py` 门禁（A1 跨条引用「同上/同规格/见母版/同图N」、A2 16:9、A3 九宫格八字段、A4·A5 角色四格与「主图」旧称致 5 格、A6 道具四格字段名），P2 出稿 FAIL 清零；③ **机检口径失真**：`validate_prompt.py` 新增 `--by-segment`，多段稿逐段独立判据——整份送检会把 3×30s 累计成 90s 一段，误判打戏档触发 C21/C22 并让 C10/C15 失真；④ 新增 `references/delivery-pitfalls.md`（交付翻车清单）与 P4「段级红线八条」（特写≥25% / 单镜≤6s / 机位不重复 / C32 背景光线写在台词前 / 运镜词表 / 人数肯定句 / 段内镜号从镜1 起 / 段缝换景别）。创作知识层（剧本、表演、打戏、画风）未改动。
 - **V7.4.23**（2026-10-16）— **粉丝排查报告核验 + 全包「文档法定词 × 机检词表」审计全修**：粉丝（Claude / Codex）报告指 `camera-specs-15rules.md` §二 法定运镜「**命中瞬间定格（Hit-Stop）**」未入机检词表 `CAM_FAMILIES` → **照文档写必报 C18g 假错**，且为规避该误报改写成「固定」的执行者又被 **C22c** 报"缺顿"（两门夹杀、无合规写法）。**逐条端到端复现，属实**。核验中把该根因**推广到全包反向核对**，另查出 **25 个词解析为空集**（定格族 11 词 + `环移` + 模式F 运镜库 7 词 + 焦点纵深拉移…），并修 **2 处 V7.4.21 本轮引入的缺陷**：① **C32 与「光影单一基准」教义互锁夹杀**（教义要求「时段光影立【场景资产】为唯一基准、镜行只写增量」，C32 却逐镜索要光线方向）→ 改**段级继承口径**（段内有基准则逐镜只判背景）；② **`BG_ELEM_RE` 过窄**（「脚下泥土犁出两道浅沟，竹叶被气浪掀飞」被漏判成"无背景"）→ 补自然环境元素 + 环境行为词。另修 `model-adapters.md` 两节**重复编号 5.0.5**（光影单一基准改 **§5.0.5b**）、新增 **`◑17` 全包零语法告警门**。⚠️ **V7.4.21 的交付 zip 请勿推送**（含上述 C32 互锁），以 V7.4.25 为准
 - **V7.4.21**（2026-10-16）— **粉丝「森林」视感反馈全修**（4 条 + 追加 3 条，逐条核验真伪后才动手）：新增 **§七 四轴联动矩阵**（景别×焦段×机位×运镜 8 档一次性写齐 + 3 条组合级禁令 + 自检四问）· **§一 景别占比预算表**（六组 × 文戏/打戏分列，补「景别维度只有特写一个区间」缺口）· **§二 景别→焦段逐级对照表**（补齐中近景 / 近景空档）· **§四 变焦族四件套**（推拉镜 / 光学变焦 Zoom / 急速变焦 Snap Zoom / 滑动变焦 Dolly Zoom 四条独立成档，并修机检别名误映射——`Zoom` 曾被错归滑动变焦且被吞进「全片 ≤1」名额）；资产体系新增**第四族「群像资产卡 `GRP-N`」**（7 字段 + 3 格出图 + `@群体名` 锚点，与 `@人名` 同栏同待遇）；画面段补**最低三要素**（人物位置/姿态 + **背景元素** + **光线方向**）。机检：**子检查码 98 → 99**（新增 `C18p` 景别占比越界），增量主码 **C27~C32**（新增 `C32` 画面段最低三要素；编号避让——`C18o` / `C30` 已被既有占用，故取 `C18p` / `C32`）；并**根治 `check_package.py` 扫描域**（收敛为 `suite_roots()` 恰 13 目录 + 新增 `◑16` 扫描域锁定断言，不再被仓库根落地页或同级其它技能误伤假 FAIL）
@@ -216,7 +231,6 @@ lixiaoxiao9888-create/manju-laoli-skill/        # V7.5.0 多技能套装（164 �
 - **V6.8 轻量版**（2026-09-15）— 可灵移出正式支持（降级 LEGACY）/ 角色资产统一 **4 View** / 空间 S0~S4 · 资产 A0~A3 · FACS **三级按需触发** / 2.5 新增**任务模式二选一**
 - **V6.7 轻量版**（2026-09-14）— 双锁同规格（模型版本 + 画幅三选一强制锁）/ 按官方文档校准 Seedance 2.5 / 吸收 FACS 微表情引擎三件套 / 吸收轻量离线分镜看板
 - **V6.5 Multi-Agent**（2026-09-01）— Asset-First 六阶段 + 多 Agent 平台适配 + Seedance 2.5 深度适配 + 静止段禁用铁律
-- 旧版归档：[**manju-laoli-skill-legacy**](https://github.com/lixiaoxiao9888-create/manju-laoli-skill-legacy)
 
 ---
 
@@ -360,7 +374,7 @@ python3 short-drama-director/scripts/build_board_lite.py <project.md>
 ## 📦 Structure
 
 ```
-lixiaoxiao9888-create/manju-laoli-skill/        # V7.5.0 multi-skill suite (164 files)
+fengjian1221-netizen/jian-skills/              # V7.5.0 multi-skill suite (164 files)
 ├── README.md                                   # landing (Chinese + English)
 ├── LICENSE / .gitignore
 ├── short-drama-director/                       # L0 router (62 files · 48 rulebooks · lint scripts)
@@ -393,7 +407,6 @@ lixiaoxiao9888-create/manju-laoli-skill/        # V7.5.0 multi-skill suite (164 
 - **V6.8 Lite** (2026-09-15) — Kling demoted to LEGACY / 4-View assets / S0–S4 · A0–A3 · FACS on-demand / 2.5 task modes
 - **V6.7 Lite** (2026-09-14) — equal-weight dual locks / Seedance 2.5 calibrated / FACS + offline board absorbed
 - **V6.5 Multi-Agent** (2026-09-01) — Asset-First 6 stages + multi-agent adapters
-- Legacy archive: [**manju-laoli-skill-legacy**](https://github.com/lixiaoxiao9888-create/manju-laoli-skill-legacy)
 
 ---
 
@@ -409,38 +422,12 @@ lixiaoxiao9888-create/manju-laoli-skill/        # V7.5.0 multi-skill suite (164 
 
 ---
 
-## 🙌 贡献者与团队
+## 🙌 贡献与交流
 
-感谢参与产品设计、开发、测试、内容与社区建设的成员：
+本技能库遵循开放、严谨的工业化制作标准，欢迎短剧编导、分镜师与 AIGC 创作者共同参与维护与交流调优。
 
-<table>
-<tr>
-<td width="50%" valign="top">
-  <img src="https://github.com/lixiaoxiao9888-create.png?size=64" alt="老李" width="56" align="left">
-  <strong>老李<br><sub>项目发起者 · 总编导 · 微信：lisenlin998</sub></strong><br>
-  <a href="mailto:lixiaoxiao9888@gmail.com">lixiaoxiao9888@gmail.com</a><br>
-  <em>用作品说话。</em>
-  <br clear="left">
-</td>
-<td width="50%" valign="top">
-  <img src="https://github.com/coco38622.png?size=64" alt="evo" width="56" align="left">
-  <strong>evo<br><sub>H3 支线贡献者 · GitHub：coco38622</sub></strong><br>
-  <a href="https://github.com/coco38622">@coco38622</a><br>
-  <em>让 H3 支线与官方文档逐字对齐。</em>
-  <br clear="left">
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-  <strong>JY<br><sub>海外剧剧本 SKILL 贡献者</sub></strong><br>
-  <em>好故事，不分国界。</em>
-  <br clear="left">
-</td>
-<td width="50%" valign="top">
-  <em>虚位以待 —— 期待你加入。</em>
-</td>
-</tr>
-</table>
+- **许可证**：本项目采用 [MIT](LICENSE) 协议开源。
+- **目标愿景**：推动 AIGC 短剧与漫剧生产走向真正工业化、标准化与高质量视听表达。
 
 
 ## V7.4.25 稳定性能力与边界
